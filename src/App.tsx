@@ -1,14 +1,6 @@
-import './App.css';
-import ProfilePage from '@pages/ProfilePage/ProfilePage';
+import MainLayout from '@/components/templates/MainLayout';
+//import MeetingsPage from '@/components/pages/MeetingsPage';
 
-function App() {
-  return (
-    <>
-      <section id="center">
-        <ProfilePage />
-      </section>
-    </>
-  );
+export default function App() {
+  return <MainLayout>{/* <MeetingsPage /> */}</MainLayout>;
 }
-
-export default App;
