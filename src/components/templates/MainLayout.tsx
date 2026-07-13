@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
+import { useMeetingStore } from '../../store/useMeetingStore';
 import Button from '../atoms/Button/Button';
+import NewMeetingDialog from '../organisms/NewMeetingDialog/NewMeetingDialog';
 import './MainLayout.css';
 
 interface MainLayoutProps {
@@ -7,9 +9,7 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const handleAddMeeting = () => {
-    alert('New Meetings will appear here');
-  };
+  const openDialog = useMeetingStore((state) => state.openDialog);
 
   return (
     <div className="layout-container">
@@ -19,10 +19,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <button className="nav-tab">TO-DO LIST</button>
         </nav>
 
-        <Button text="ADD MEETING" onClick={handleAddMeeting} />
+        <Button text="ADD MEETING" onClick={openDialog} />
       </header>
 
-      <main className="layout-content">{children}</main>
+      <main className="layout-content">
+        <div className="content-frame">{children}</div>
+      </main>
+
+      <NewMeetingDialog />
     </div>
   );
 }

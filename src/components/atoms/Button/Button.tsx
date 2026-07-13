@@ -1,11 +1,14 @@
-import { FC } from 'react';
-import '@atoms/Button/Button.css';
-import { ButtonProps } from './IButton';
+import './Button.css';
 
-const Button: FC<ButtonProps> = ({ label, onClick, type = 'button' }) => (
-  <button type={type} className="button" onClick={onClick}>
-    {label}
-  </button>
-);
+interface ButtonProps {
+  text: string;
+  onClick: () => void;
+}
 
-export default Button;
+export default function Button({ text, onClick }: ButtonProps) {
+  return (
+    <button type="button" className="primary-button" onClick={onClick}>
+      {text}
+    </button>
+  );
+}
