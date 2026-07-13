@@ -8,7 +8,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const handleAddMeeting = () => {
-    alert('Modal for New Meeting will appear here');
+    alert('New Meetings will appear here');
   };
 
   return (
