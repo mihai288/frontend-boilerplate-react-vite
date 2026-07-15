@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import AuthLayout from '@templates/AuthLayout/AuthLayout';
 import LoginPage from '@pages/Auth/LoginPage/LoginPage';
 import SignUpPage from '@pages/Auth/SignUpPage/SignUpPage';
+import MainLayout from '@templates/MainLayout';
+import ProfilePage from '@pages/ProfilePage/ProfilePage';
 
 export default function App() {
   return (
@@ -11,6 +13,16 @@ export default function App() {
         <Route path="signup" element={<SignUpPage />} />
         <Route path="login" element={<LoginPage />} />
       </Route>
+
+      <Route
+        path="/main"
+        element={
+          <MainLayout>
+            <ProfilePage />
+          </MainLayout>
+        }
+      />
+      <Route path="*" element={<Navigate to="/signup" replace />} />
     </Routes>
   );
 }

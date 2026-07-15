@@ -61,6 +61,12 @@
   margin-top: 2px;
 }
 
+.auth-form__error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.92rem;
+}
+
 .auth-form__submit {
   border: none;
   border-radius: 4px;
@@ -70,6 +76,11 @@
   color: #ffffff;
   background: #0f62fe;
   cursor: pointer;
+}
+
+.auth-form__submit:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .auth-form__submit:hover {

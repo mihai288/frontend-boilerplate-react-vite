@@ -96,3 +96,29 @@ This boilerplate is intentionally minimal:
 - Uses modern ES modules
 - Optimized for developer experience
 - Works great with Storybook, testing libraries, and UI frameworks
+
+## 🔐 Backend Auth Integration
+
+Set your API base URL in a `.env` file before running the app:
+
+```bash
+VITE_API_URL=http://localhost:3000
+```
+
+The auth pages call these endpoints by default:
+
+- `POST /auth/register`
+- `POST /auth/login`
+
+Each endpoint should return a JSON session payload shaped like:
+
+```json
+{
+  "access_token": "jwt-or-session-token",
+  "user": {
+    "id": "1",
+    "name": "Antonia Rivera",
+    "email": "you@example.com"
+  }
+}
+```

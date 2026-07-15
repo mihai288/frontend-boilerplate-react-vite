@@ -31,6 +31,7 @@
       "@organisms/*": ["./src/components/organisms/*"],
       "@templates/*": ["./src/components/templates/*"],
       "@pages/*": ["./src/components/pages/*"],
+      "@services/*": ["./src/services/*"],
       "@/*": ["./src/*"]
     }
   },
