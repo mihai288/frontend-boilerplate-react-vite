@@ -2,17 +2,27 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f4f4f4;
-  font-family: sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.12), transparent 34%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
 .layout-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.9);
   padding: 15px 30px;
   border-bottom: 2px solid #e0e0e0;
+  backdrop-filter: blur(10px);
 }
 
 .layout-nav {
