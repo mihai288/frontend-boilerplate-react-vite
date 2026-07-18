@@ -40,7 +40,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 12px;
-  color: #0f766e;
+  color: #2563eb;
   font-weight: 800;
 }
 
@@ -156,8 +156,8 @@
 }
 
 .toggle-chip.active {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: #2563eb;
+  border-color: #2563eb;
   color: #fff;
 }
 
@@ -169,11 +169,11 @@
 
 .add-attendee-button {
   width: fit-content;
-  border: 1px dashed rgba(15, 118, 110, 0.35);
+  border: 1px dashed rgba(59, 130, 246, 0.35);
   border-radius: 999px;
   padding: 10px 18px;
-  background: rgba(240, 253, 250, 0.9);
-  color: #0f766e;
+  background: rgba(219, 234, 254, 0.9);
+  color: #2563eb;
   font-weight: 800;
   cursor: pointer;
 }
@@ -198,15 +198,14 @@
   border: none;
   border-radius: 999px;
   padding: 12px 18px;
-  background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+  background: #2563eb;
   color: white;
   cursor: pointer;
   font-weight: bold;
-  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.22);
 }
 
 .submit-button:hover {
-  filter: brightness(1.02);
+  background: #1d4ed8;
 }
 
 .submit-button:disabled {

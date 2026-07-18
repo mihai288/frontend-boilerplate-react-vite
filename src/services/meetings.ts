@@ -12,6 +12,7 @@ export interface CreateMeetingPayload {
   title: string;
   date: string;
   description?: string;
+  transcript?: string;
 }
 
 export interface Meeting {

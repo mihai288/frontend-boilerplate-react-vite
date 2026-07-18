@@ -14,7 +14,6 @@ export default function NewMeetingDialog() {
   const [transcriptFileName, setTranscriptFileName] = useState('');
   const [attendees, setAttendees] = useState<AttendeeDraft[]>([{ name: '', email: '', role: '' }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [date, setDate] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const addMeeting = useMeetingStore((state) => state.addMeeting);
@@ -258,27 +257,6 @@ export default function NewMeetingDialog() {
           </section>
 
           {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
-          <div className="input-group">
-            <label>Date and time</label>
-            <input
-              type="datetime-local"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label>Description</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional notes about the meeting"
-            />
-          </div>
-
-          {errorMessage ? <p className="dialog-error">{errorMessage}</p> : null}
 
           <div className="dialog-buttons">
             <Button text="Cancel" onClick={closeDialog} />
