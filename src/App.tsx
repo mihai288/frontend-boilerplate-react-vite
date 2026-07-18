@@ -3,7 +3,7 @@ import AuthLayout from '@templates/AuthLayout/AuthLayout';
 import LoginPage from '@pages/Auth/LoginPage/LoginPage';
 import SignUpPage from '@pages/Auth/SignUpPage/SignUpPage';
 import MainLayout from '@templates/MainLayout';
-import ProfilePage from '@pages/ProfilePage/ProfilePage';
+import MeetingsPage from '@pages/MeetingsPage/MeetingsPage';
 
 export default function App() {
   return (
@@ -18,7 +18,7 @@ export default function App() {
         path="/main"
         element={
           <MainLayout>
-            <ProfilePage />
+            <MeetingsPage />
           </MainLayout>
         }
       />

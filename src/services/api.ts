@@ -21,6 +21,26 @@ function readAccessToken() {
   }
 }
 
+function readAuthToken() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const rawSession = window.localStorage.getItem('auth-session');
+
+  if (!rawSession) {
+    return null;
+  }
+
+  try {
+    const session = JSON.parse(rawSession) as { access_token?: string };
+    return session.access_token ?? null;
+  } catch {
+    window.localStorage.removeItem('auth-session');
+    return null;
+  }
+}
+
 async function readResponseBody(response: Response) {
   const contentType = response.headers.get('content-type') ?? '';
 
@@ -33,11 +53,13 @@ async function readResponseBody(response: Response) {
 
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const accessToken = readAccessToken();
+  const token = readAuthToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init.headers ?? {}),
     },
   });

@@ -1,0 +1,92 @@
+.meeting-card {
+  border: 1px solid #cfd6e4;
+  border-radius: 18px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.meeting-card--expanded {
+  border-color: #9fb5dd;
+}
+
+.meeting-card__summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.meeting-card__title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.meeting-card__chevron {
+  color: #334155;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.meeting-card__date {
+  display: block;
+  color: #475569;
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.meeting-card__title {
+  display: block;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meeting-card__meta {
+  flex-shrink: 0;
+}
+
+.meeting-card__details {
+  display: grid;
+  gap: 16px;
+  padding: 0 20px 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.meeting-card__label {
+  margin-bottom: 6px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.meeting-card__text {
+  color: #0f172a;
+  line-height: 1.55;
+}
+
+.meeting-card__text--mono {
+  word-break: break-all;
+  font-family: ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+  font-size: 13px;
+}
+
+@media (max-width: 860px) {
+  .meeting-card__details {
+    grid-template-columns: 1fr;
+  }
+}
