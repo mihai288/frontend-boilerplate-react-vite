@@ -1,0 +1,48 @@
+.attendee-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.attendee-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attendee-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.attendee-field input {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 14px;
+}
+
+.attendee-remove-button {
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: 12px;
+  padding: 11px 14px;
+  background: rgba(254, 226, 226, 0.85);
+  color: #b91c1c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .attendee-row {
+    grid-template-columns: 1fr;
+  }
+}
