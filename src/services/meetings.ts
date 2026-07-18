@@ -1,5 +1,7 @@
 import { apiRequest } from './api';
 
+export type MeetingStatus = 'idle' | 'processing' | 'completed' | 'failed';
+
 export interface MeetingAttendeeInput {
   name: string;
   email?: string;
@@ -7,7 +9,10 @@ export interface MeetingAttendeeInput {
 }
 
 export interface CreateMeetingPayload {
-export type MeetingStatus = 'idle' | 'processing' | 'completed' | 'failed';
+  title: string;
+  date: string;
+  description?: string;
+}
 
 export interface Meeting {
   _id: string;
@@ -16,6 +21,7 @@ export interface Meeting {
   description?: string;
   transcript?: string;
   attendees: MeetingAttendeeInput[];
+  status: MeetingStatus;
 }
 
 export interface MeetingRecord {
@@ -24,31 +30,18 @@ export interface MeetingRecord {
   date: string;
   description?: string;
   transcript?: string;
-  aiProcessingStatus: 'idle' | 'processing' | 'completed' | 'failed';
+  aiProcessingStatus: MeetingStatus;
   createdAt: string;
   updatedAt: string;
 }
 
 export async function createMeeting(payload: CreateMeetingPayload) {
   return apiRequest<MeetingRecord>('/meetings', {
-  status: MeetingStatus;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CreateMeetingPayload {
-  title: string;
-  date: string;
-  description?: string;
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
 
 export function getMeetings() {
   return apiRequest<Meeting[]>('/meetings');
-}
-
-export function createMeeting(payload: CreateMeetingPayload) {
-  return apiRequest<Meeting>('/meetings', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
 }

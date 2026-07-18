@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 .auth-layout {
   display: flex;
   flex-direction: column;

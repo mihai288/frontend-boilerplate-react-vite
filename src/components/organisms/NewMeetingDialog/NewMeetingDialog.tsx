@@ -4,7 +4,6 @@ import Button from '../../atoms/Button/Button';
 import AttendeeRow, { type AttendeeDraft } from '../../molecules/AttendeeRow/AttendeeRow';
 import { createMeeting } from '../../../services/meetings';
 import './NewMeetingDialog.css';
-import { createMeeting } from '@services/meetings';
 
 export default function NewMeetingDialog() {
   const [title, setTitle] = useState('');
@@ -16,7 +15,6 @@ export default function NewMeetingDialog() {
   const [attendees, setAttendees] = useState<AttendeeDraft[]>([{ name: '', email: '', role: '' }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [date, setDate] = useState('');
-  const [description, setDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const addMeeting = useMeetingStore((state) => state.addMeeting);
@@ -116,33 +114,14 @@ export default function NewMeetingDialog() {
     };
 
     try {
-      await createMeeting(meetingData);
+      const createdMeeting = await createMeeting(meetingData);
+      addMeeting(createdMeeting);
       resetForm();
       closeDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to create the meeting.');
     } finally {
       setIsSubmitting(false);
-  const handleSubmit = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-
-    setErrorMessage('');
-
-    const meetingData = {
-      title,
-      date: new Date(date).toISOString(),
-      description: description.trim() || undefined,
-    };
-
-    try {
-      const createdMeeting = await createMeeting(meetingData);
-      addMeeting(createdMeeting);
-      setTitle('');
-      setDate('');
-      setDescription('');
-      closeDialog();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to create meeting');
     }
   };
 

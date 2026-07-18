@@ -44,28 +44,22 @@ export default function SignUpPage() {
         <div className="auth-form__split">
           <div className="auth-form__row">
             <label htmlFor="firstName">First name</label>
-            <input id="firstName" name="firstName" type="text" placeholder="Antonia" required />
+            <input id="firstName" name="firstName" type="text" placeholder="" required />
           </div>
           <div className="auth-form__row">
             <label htmlFor="lastName">Last name</label>
-            <input id="lastName" name="lastName" type="text" placeholder="Rivera" required />
+            <input id="lastName" name="lastName" type="text" placeholder="" required />
           </div>
         </div>
 
         <div className="auth-form__row">
           <label htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" placeholder="you@example.com" required />
+          <input id="email" name="email" type="email" placeholder="" required />
         </div>
 
         <div className="auth-form__row">
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Create a strong password"
-            required
-          />
+          <input id="password" name="password" type="password" placeholder="" required />
         </div>
 
         <div className="auth-form__row">
@@ -74,7 +68,7 @@ export default function SignUpPage() {
             id="confirmPassword"
             name="confirmPassword"
             type="password"
-            placeholder="Repeat your password"
+            placeholder=""
             required
           />
         </div>

@@ -22,6 +22,14 @@ export default function App() {
           </MainLayout>
         }
       />
+      <Route
+        path="/meetings"
+        element={
+          <MainLayout>
+            <MeetingsPage />
+          </MainLayout>
+        }
+      />
       <Route path="*" element={<Navigate to="/signup" replace />} />
     </Routes>
   );
