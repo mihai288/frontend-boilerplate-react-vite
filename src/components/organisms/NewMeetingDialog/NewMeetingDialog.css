@@ -25,6 +25,12 @@
   margin-bottom: 20px;
 }
 
+.dialog-error {
+  margin-top: 6px;
+  color: #b42318;
+  font-size: 14px;
+}
+
 .input-group {
   display: flex;
   flex-direction: column;

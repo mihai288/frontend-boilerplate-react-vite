@@ -1,7 +1,7 @@
 .user-avatar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
 }
 
 .avatar-img {
@@ -12,5 +12,5 @@
 
 .avatar-name {
   font-weight: 500;
-  color: #000000;
+  color: #ca3030;
 }
