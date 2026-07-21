@@ -173,6 +173,25 @@
   box-sizing: border-box;
 }
 
+.route-placeholder {
+  display: grid;
+  gap: 10px;
+  padding: 32px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.route-placeholder h1 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.route-placeholder p {
+  margin: 0;
+  color: #64748b;
+}
+
 @media (max-width: 900px) {
   .layout-header {
     flex-wrap: wrap;

@@ -16,6 +16,8 @@ export default function MeetingsPage() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
   const [expandedMeetingId, setExpandedMeetingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     let isMounted = true;
@@ -62,6 +64,24 @@ export default function MeetingsPage() {
     });
   }, [meetings, query, status]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredMeetings.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, status]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedMeetings = filteredMeetings.slice(
+    (safeCurrentPage - 1) * PAGE_SIZE,
+    safeCurrentPage * PAGE_SIZE,
+  );
+
   return (
     <div className="meetings-page">
       <div className="meetings-page__content">
@@ -82,13 +102,51 @@ export default function MeetingsPage() {
           ) : null}
 
           {filteredMeetings.length > 0 ? (
-            <MeetingsPanel
-              meetings={filteredMeetings}
-              expandedMeetingId={expandedMeetingId}
-              onToggleMeeting={(meetingId) =>
-                setExpandedMeetingId((currentId) => (currentId === meetingId ? null : meetingId))
-              }
-            />
+            <>
+              <MeetingsPanel
+                meetings={paginatedMeetings}
+                expandedMeetingId={expandedMeetingId}
+                onToggleMeeting={(meetingId) =>
+                  setExpandedMeetingId((currentId) => (currentId === meetingId ? null : meetingId))
+                }
+              />
+
+              {totalPages > 1 ? (
+                <div className="meetings-page__pagination">
+                  <button
+                    type="button"
+                    className="meetings-page__pagination-button"
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={safeCurrentPage === 1}
+                  >
+                    Previous
+                  </button>
+
+                  <label className="meetings-page__page-select">
+                    <span>Page</span>
+                    <select
+                      value={safeCurrentPage}
+                      onChange={(event) => setCurrentPage(Number(event.target.value))}
+                    >
+                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                        <option key={page} value={page}>
+                          {page} of {totalPages}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="meetings-page__pagination-button"
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                    disabled={safeCurrentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              ) : null}
+            </>
           ) : null}
         </section>
       </div>

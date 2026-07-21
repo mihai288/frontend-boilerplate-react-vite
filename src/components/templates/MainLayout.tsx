@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMeetingStore } from '../../store/useMeetingStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import Button from '../atoms/Button/Button';
@@ -12,12 +12,18 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const openDialog = useMeetingStore((state) => state.openDialog);
-  const activeTab = useMeetingStore((state) => state.activeTab);
   const setActiveTab = useMeetingStore((state) => state.setActiveTab);
   const user = useAuthStore((state) => state.user);
   const clearSession = useAuthStore((state) => state.clearSession);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const currentTab = location.pathname.includes('/todos')
+    ? 'todos'
+    : location.pathname.includes('/profile')
+      ? 'profile'
+      : 'meetings';
 
   const initials =
     user?.name
@@ -46,22 +52,31 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         <nav className="layout-nav" aria-label="Primary">
           <button
-            className={`nav-tab ${activeTab === 'meetings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('meetings')}
+            className={`nav-tab ${currentTab === 'meetings' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('meetings');
+              navigate('/meetings', { replace: false });
+            }}
           >
             Meetings
           </button>
 
           <button
-            className={`nav-tab ${activeTab === 'todos' ? 'active' : ''}`}
-            onClick={() => setActiveTab('todos')}
+            className={`nav-tab ${currentTab === 'todos' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('todos');
+              navigate('/todos', { replace: false });
+            }}
           >
             To-dos
           </button>
 
           <button
-            className={`nav-tab ${activeTab === 'profile' ? 'active' : ''}`}
-            onClick={() => setActiveTab('profile')}
+            className={`nav-tab ${currentTab === 'profile' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('profile');
+              navigate('/profile', { replace: false });
+            }}
           >
             Profile
           </button>
