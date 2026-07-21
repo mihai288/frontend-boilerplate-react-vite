@@ -32,13 +32,18 @@
 }
 
 .attendee-remove-button {
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  border-radius: 12px;
+  border: none;
+  border-radius: 999px;
   padding: 11px 14px;
-  background: rgba(254, 226, 226, 0.85);
-  color: #b91c1c;
+  background: #dc2626;
+  color: white;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.attendee-remove-button:hover {
+  background: #b91c1c;
 }
 
 @media (max-width: 900px) {

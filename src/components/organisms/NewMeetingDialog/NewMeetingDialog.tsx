@@ -259,7 +259,7 @@ export default function NewMeetingDialog() {
           {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
 
           <div className="dialog-buttons">
-            <Button text="Cancel" onClick={closeDialog} />
+            <Button text="Cancel" onClick={closeDialog} variant="danger" />
             <button type="submit" className="submit-button" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Add Meeting'}
             </button>

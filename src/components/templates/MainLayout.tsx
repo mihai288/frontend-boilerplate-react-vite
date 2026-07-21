@@ -21,18 +21,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
             className={`nav-tab ${activeTab === 'meetings' ? 'active' : ''}`}
             onClick={() => setActiveTab('meetings')}
           >
-            MEETING LIST
+            MEETINGS
           </button>
 
           <button
             className={`nav-tab ${activeTab === 'todos' ? 'active' : ''}`}
             onClick={() => setActiveTab('todos')}
           >
-            TO-DO LIST
+            TO-DOS
           </button>
         </nav>
 
-        <Button text="ADD MEETING" onClick={openDialog} />
+        <Button text="ADD MEETING" onClick={openDialog} variant="success" />
       </header>
 
       <main className="layout-content">

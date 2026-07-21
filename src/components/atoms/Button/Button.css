@@ -1,12 +1,59 @@
 .primary-button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
   cursor: pointer;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  transition:
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
 }
 
 .primary-button:hover {
-  background-color: #0056b3;
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.12);
+}
+
+.primary-button.primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.primary-button.primary:hover {
+  background-color: #1d4ed8;
+}
+
+.primary-button.success {
+  background-color: #16a34a;
+  color: white;
+}
+
+.primary-button.success:hover {
+  background-color: #15803d;
+}
+
+.primary-button.danger {
+  background-color: #dc2626;
+  color: white;
+}
+
+.primary-button.danger:hover {
+  background-color: #b91c1c;
+}
+
+.primary-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.primary-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 2px;
 }
