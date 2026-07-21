@@ -6,6 +6,7 @@ import { createMeeting } from '../../../services/meetings';
 import './NewMeetingDialog.css';
 
 export default function NewMeetingDialog() {
+  const [step, setStep] = useState(1);
   const [title, setTitle] = useState('');
   const [meetingDateTime, setMeetingDateTime] = useState('');
   const [description, setDescription] = useState('');
@@ -41,6 +42,7 @@ export default function NewMeetingDialog() {
   };
 
   const resetForm = () => {
+    setStep(1);
     setTitle('');
     setMeetingDateTime('');
     setDescription('');
@@ -64,6 +66,32 @@ export default function NewMeetingDialog() {
     setTranscriptMode('file');
     setTranscriptFileName(file.name);
     setTranscript(fileContents);
+  };
+
+  const goToNextStep = () => {
+    setErrorMessage('');
+
+    if (step === 1) {
+      const normalizedTitle = title.trim();
+      const normalizedDate = meetingDateTime ? new Date(meetingDateTime) : null;
+
+      if (!normalizedTitle) {
+        setErrorMessage('Title is required.');
+        return;
+      }
+
+      if (!normalizedDate || Number.isNaN(normalizedDate.getTime())) {
+        setErrorMessage('Date and time are required.');
+        return;
+      }
+
+      setStep(2);
+      return;
+    }
+
+    if (step === 2) {
+      setStep(3);
+    }
   };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -146,123 +174,161 @@ export default function NewMeetingDialog() {
         </div>
 
         <form className="meeting-form" onSubmit={handleSubmit}>
-          <div className="form-grid">
-            <div className="input-group">
-              <label htmlFor="meeting-title">Title</label>
-              <input
-                id="meeting-title"
-                type="text"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="Quarterly planning sync"
-                required
-              />
+          <div className="stepper" aria-label="Meeting setup progress">
+            <div className={`step-dot ${step >= 1 ? 'active' : ''}`}>
+              <span>1</span>
             </div>
-
-            <div className="input-group">
-              <label htmlFor="meeting-date-time">Date and time</label>
-              <input
-                id="meeting-date-time"
-                type="datetime-local"
-                value={meetingDateTime}
-                onChange={(event) => setMeetingDateTime(event.target.value)}
-                required
-              />
+            <div className="step-line" />
+            <div className={`step-dot ${step >= 2 ? 'active' : ''}`}>
+              <span>2</span>
             </div>
-
-            <div className="input-group input-group-wide">
-              <label htmlFor="meeting-description">Description</label>
-              <textarea
-                id="meeting-description"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                placeholder="Optional context for the meeting"
-                rows={3}
-              />
+            <div className="step-line" />
+            <div className={`step-dot ${step >= 3 ? 'active' : ''}`}>
+              <span>3</span>
             </div>
           </div>
 
-          <section className="form-section">
-            <div className="section-heading">
-              <h3>Transcript</h3>
-              <p>
-                Provide text directly or upload a file and we will read it into the meeting record.
-              </p>
-            </div>
-
-            <div className="transcript-toggle">
-              <button
-                type="button"
-                className={`toggle-chip ${transcriptMode === 'text' ? 'active' : ''}`}
-                onClick={() => setTranscriptMode('text')}
-              >
-                Text input
-              </button>
-              <button
-                type="button"
-                className={`toggle-chip ${transcriptMode === 'file' ? 'active' : ''}`}
-                onClick={() => setTranscriptMode('file')}
-              >
-                File upload
-              </button>
-            </div>
-
-            {transcriptMode === 'file' ? (
-              <div className="input-group">
-                <label htmlFor="transcript-file">Transcript file</label>
-                <input
-                  id="transcript-file"
-                  type="file"
-                  accept=".txt,.md,.csv,.json,.log"
-                  onChange={handleTranscriptFileChange}
-                />
-                <span className="input-hint">{transcriptFileName || 'No file selected yet'}</span>
+          {step === 1 ? (
+            <section className="form-section">
+              <div className="section-heading">
+                <h3>Step 1 • Basics</h3>
+                <p>Start with the meeting title, date, and a short description.</p>
               </div>
-            ) : null}
 
-            <div className="input-group">
-              <label htmlFor="meeting-transcript">Transcript text</label>
-              <textarea
-                id="meeting-transcript"
-                value={transcript}
-                onChange={(event) => setTranscript(event.target.value)}
-                placeholder="Paste the transcript here or upload a file above"
-                rows={8}
-              />
-            </div>
-          </section>
+              <div className="form-grid">
+                <div className="input-group">
+                  <label htmlFor="meeting-title">Title</label>
+                  <input
+                    id="meeting-title"
+                    type="text"
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="Quarterly planning sync"
+                  />
+                </div>
 
-          <section className="form-section">
-            <div className="section-heading">
-              <h3>Attendees</h3>
-              <p>Add one or more participants. Only the name is required.</p>
-            </div>
+                <div className="input-group">
+                  <label htmlFor="meeting-date-time">Date and time</label>
+                  <input
+                    id="meeting-date-time"
+                    type="datetime-local"
+                    value={meetingDateTime}
+                    onChange={(event) => setMeetingDateTime(event.target.value)}
+                  />
+                </div>
 
-            <div className="attendee-list">
-              {attendees.map((attendee, index) => (
-                <AttendeeRow
-                  key={`${index}-${attendee.name}-${attendee.email}`}
-                  index={index}
-                  attendee={attendee}
-                  canRemove={attendees.length > 1}
-                  onChange={updateAttendee}
-                  onRemove={removeAttendee}
+                <div className="input-group input-group-wide">
+                  <label htmlFor="meeting-description">Description</label>
+                  <textarea
+                    id="meeting-description"
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    placeholder="Optional context for the meeting"
+                    rows={4}
+                  />
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {step === 2 ? (
+            <section className="form-section">
+              <div className="section-heading">
+                <h3>Step 2 • Transcript</h3>
+                <p>Choose how you want to add the meeting transcript.</p>
+              </div>
+
+              <div className="transcript-toggle">
+                <button
+                  type="button"
+                  className={`toggle-chip ${transcriptMode === 'text' ? 'active' : ''}`}
+                  onClick={() => setTranscriptMode('text')}
+                >
+                  Text input
+                </button>
+                <button
+                  type="button"
+                  className={`toggle-chip ${transcriptMode === 'file' ? 'active' : ''}`}
+                  onClick={() => setTranscriptMode('file')}
+                >
+                  File upload
+                </button>
+              </div>
+
+              {transcriptMode === 'file' ? (
+                <div className="input-group">
+                  <label htmlFor="transcript-file">Transcript file</label>
+                  <input
+                    id="transcript-file"
+                    type="file"
+                    accept=".txt,.md,.csv,.json,.log"
+                    onChange={handleTranscriptFileChange}
+                  />
+                  <span className="input-hint">{transcriptFileName || 'No file selected yet'}</span>
+                </div>
+              ) : null}
+
+              <div className="input-group">
+                <label htmlFor="meeting-transcript">Transcript text</label>
+                <textarea
+                  id="meeting-transcript"
+                  value={transcript}
+                  onChange={(event) => setTranscript(event.target.value)}
+                  placeholder="Paste the transcript here or upload a file above"
+                  rows={8}
                 />
-              ))}
-            </div>
+              </div>
+            </section>
+          ) : null}
 
-            <button type="button" className="add-attendee-button" onClick={addAttendee}>
-              + Add attendee
-            </button>
-          </section>
+          {step === 3 ? (
+            <section className="form-section">
+              <div className="section-heading">
+                <h3>Step 3 • Attendees</h3>
+                <p>Add the people who should be associated with this meeting.</p>
+              </div>
+
+              <div className="attendee-list">
+                {attendees.map((attendee, index) => (
+                  <AttendeeRow
+                    key={`${index}-${attendee.name}-${attendee.email}`}
+                    index={index}
+                    attendee={attendee}
+                    canRemove={attendees.length > 1}
+                    onChange={updateAttendee}
+                    onRemove={removeAttendee}
+                  />
+                ))}
+              </div>
+
+              <button type="button" className="add-attendee-button" onClick={addAttendee}>
+                + Add attendee
+              </button>
+            </section>
+          ) : null}
 
           {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
 
           <div className="dialog-buttons">
             <Button text="Cancel" onClick={closeDialog} variant="danger" />
-            <button type="submit" className="submit-button" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Add Meeting'}
-            </button>
+            {step > 1 ? (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setStep((current) => current - 1)}
+              >
+                Back
+              </button>
+            ) : null}
+            {step < 3 ? (
+              <button type="button" className="submit-button" onClick={goToNextStep}>
+                Next
+              </button>
+            ) : (
+              <button type="submit" className="submit-button" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Add'}
+              </button>
+            )}
           </div>
         </form>
       </div>

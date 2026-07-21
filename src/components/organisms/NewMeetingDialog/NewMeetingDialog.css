@@ -63,6 +63,38 @@
   gap: 22px;
 }
 
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.step-dot {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.step-dot.active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: white;
+}
+
+.step-line {
+  width: 44px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -199,6 +231,16 @@
   flex-wrap: wrap;
 }
 
+.secondary-button {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: white;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .submit-button {
   border: none;
   border-radius: 999px;
@@ -236,5 +278,9 @@
 
   .dialog-buttons > * {
     width: 100%;
+  }
+
+  .step-line {
+    width: 24px;
   }
 }
