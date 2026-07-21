@@ -34,10 +34,6 @@ export default function MeetingsSidebar({
           <option value="failed">Failed</option>
         </select>
       </label>
-
-      <div className="meetings-sidebar__hint">
-        The page loads the full meetings collection from the backend and filters the result locally.
-      </div>
     </aside>
   );
 }

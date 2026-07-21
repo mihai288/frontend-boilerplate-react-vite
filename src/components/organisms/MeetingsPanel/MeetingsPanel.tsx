@@ -15,12 +15,6 @@ export default function MeetingsPanel({
 }: MeetingsPanelProps) {
   return (
     <section className="meetings-panel" aria-label="Meetings list">
-      <div className="meetings-panel__header">
-        <span>Date</span>
-        <span>Title</span>
-        <span>Status</span>
-      </div>
-
       <div className="meetings-panel__list">
         {meetings.map((meeting) => (
           <MeetingCard
