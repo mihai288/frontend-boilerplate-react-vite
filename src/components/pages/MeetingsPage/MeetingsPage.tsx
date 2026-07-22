@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import MeetingsPanel from '@organisms/MeetingsPanel/MeetingsPanel';
 import MeetingsSidebar from '@organisms/MeetingsSidebar/MeetingsSidebar';
-import { getMeetings } from '@services/meetings';
+import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
+import { getMeetings, type Meeting } from '@services/meetings';
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './MeetingsPage.css';
 
@@ -15,7 +16,9 @@ export default function MeetingsPage() {
 
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
-  const [expandedMeetingId, setExpandedMeetingId] = useState<string | null>(null);
+  const [dateFilter, setDateFilter] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'created'>('date');
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
@@ -53,23 +56,41 @@ export default function MeetingsPage() {
   const filteredMeetings = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return meetings.filter((meeting) => {
+    const filtered = meetings.filter((meeting) => {
       const matchesStatus = status === 'all' || meeting.status === status;
       const matchesQuery =
         normalizedQuery.length === 0 ||
         meeting.title.toLowerCase().includes(normalizedQuery) ||
         (meeting.description ?? '').toLowerCase().includes(normalizedQuery);
+      const matchesDate =
+        dateFilter.length === 0 || new Date(meeting.date).toISOString().slice(0, 10) === dateFilter;
 
-      return matchesStatus && matchesQuery;
+      return matchesStatus && matchesQuery && matchesDate;
     });
-  }, [meetings, query, status]);
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.title.localeCompare(b.title);
+      }
+
+      if (sortBy === 'created') {
+        const createdA = new Date(a.createdAt ?? a.date).getTime();
+        const createdB = new Date(b.createdAt ?? b.date).getTime();
+        return createdB - createdA;
+      }
+
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
+  }, [meetings, query, status, dateFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredMeetings.length / PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, status]);
+  }, [query, status, dateFilter]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -88,8 +109,10 @@ export default function MeetingsPage() {
         <MeetingsSidebar
           query={query}
           status={status}
+          dateFilter={dateFilter}
           onQueryChange={setQuery}
           onStatusChange={setStatus}
+          onDateChange={setDateFilter}
         />
 
         <section className="meetings-page__main" aria-live="polite">
@@ -103,12 +126,25 @@ export default function MeetingsPage() {
 
           {filteredMeetings.length > 0 ? (
             <>
+              <div className="meetings-page__toolbar">
+                <p className="meetings-page__toolbar-label">Sort by</p>
+                <label className="meetings-page__sort-select">
+                  <select
+                    value={sortBy}
+                    onChange={(event) =>
+                      setSortBy(event.target.value as 'date' | 'name' | 'created')
+                    }
+                  >
+                    <option value="date">Date</option>
+                    <option value="name">Name</option>
+                    <option value="created">Last created</option>
+                  </select>
+                </label>
+              </div>
+
               <MeetingsPanel
                 meetings={paginatedMeetings}
-                expandedMeetingId={expandedMeetingId}
-                onToggleMeeting={(meetingId) =>
-                  setExpandedMeetingId((currentId) => (currentId === meetingId ? null : meetingId))
-                }
+                onOpenMeeting={(meeting) => setSelectedMeeting(meeting)}
               />
 
               {totalPages > 1 ? (
@@ -150,6 +186,21 @@ export default function MeetingsPage() {
           ) : null}
         </section>
       </div>
+
+      {selectedMeeting ? (
+        <MeetingDetailsModal
+          meeting={selectedMeeting}
+          onClose={() => setSelectedMeeting(null)}
+          onSave={(updatedMeeting) => {
+            setMeetings(
+              meetings.map((meeting) =>
+                meeting._id === updatedMeeting._id ? updatedMeeting : meeting,
+              ),
+            );
+            setSelectedMeeting(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

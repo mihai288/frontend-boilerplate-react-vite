@@ -4,8 +4,7 @@ import './MeetingCard.css';
 
 interface MeetingCardProps {
   meeting: Meeting;
-  isExpanded: boolean;
-  onToggle: () => void;
+  onOpen: () => void;
 }
 
 function formatMeetingDate(value: string) {
@@ -15,15 +14,18 @@ function formatMeetingDate(value: string) {
   }).format(new Date(value));
 }
 
-export default function MeetingCard({ meeting, isExpanded, onToggle }: MeetingCardProps) {
+export default function MeetingCard({ meeting, onOpen }: MeetingCardProps) {
   return (
-    <article className={`meeting-card ${isExpanded ? 'meeting-card--expanded' : ''}`}>
-      <button type="button" className="meeting-card__summary" onClick={onToggle}>
+    <article className="meeting-card">
+      <button type="button" className="meeting-card__summary" onClick={onOpen}>
         <span className="meeting-card__title-group">
-          <span className="meeting-card__chevron">{isExpanded ? '▾' : '▸'}</span>
-          <span>
+          <span className="meeting-card__icon">🗓️</span>
+          <span className="meeting-card__text-block">
             <span className="meeting-card__date">{formatMeetingDate(meeting.date)}</span>
             <span className="meeting-card__title">{meeting.title}</span>
+            <span className="meeting-card__subtitle">
+              {meeting.description ? meeting.description : 'Open to view details and attendees'}
+            </span>
           </span>
         </span>
 
@@ -31,29 +33,6 @@ export default function MeetingCard({ meeting, isExpanded, onToggle }: MeetingCa
           <MeetingStatusBadge status={meeting.status} />
         </span>
       </button>
-
-      {isExpanded ? (
-        <div className="meeting-card__details">
-          <div>
-            <p className="meeting-card__label">Description</p>
-            <p className="meeting-card__text">
-              {meeting.description || 'No description provided.'}
-            </p>
-          </div>
-
-          <div>
-            <p className="meeting-card__label">Transcript</p>
-            <p className="meeting-card__text">
-              {meeting.transcript || 'Transcript not available yet.'}
-            </p>
-          </div>
-
-          <div>
-            <p className="meeting-card__label">Record ID</p>
-            <p className="meeting-card__text meeting-card__text--mono">{meeting._id}</p>
-          </div>
-        </div>
-      ) : null}
     </article>
   );
 }

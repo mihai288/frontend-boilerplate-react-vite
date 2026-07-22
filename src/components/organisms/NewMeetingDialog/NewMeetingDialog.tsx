@@ -36,9 +36,12 @@ export default function NewMeetingDialog() {
   };
 
   const removeAttendee = (index: number) => {
-    setAttendees((currentAttendees) =>
-      currentAttendees.filter((_, attendeeIndex) => attendeeIndex !== index),
-    );
+    const isConfirmed = window.confirm('Ești sigur că vrei să ștergi acest participant?');
+    if (isConfirmed) {
+      setAttendees((currentAttendees) =>
+        currentAttendees.filter((_, attendeeIndex) => attendeeIndex !== index),
+      );
+    }
   };
 
   const resetForm = () => {
@@ -151,6 +154,8 @@ export default function NewMeetingDialog() {
       setIsSubmitting(false);
     }
   };
+
+  const canAddAttendee = attendees[attendees.length - 1]?.name.trim() !== '';
 
   return (
     <div className="dialog-overlay" role="presentation" onClick={closeDialog}>
@@ -291,7 +296,7 @@ export default function NewMeetingDialog() {
               <div className="attendee-list">
                 {attendees.map((attendee, index) => (
                   <AttendeeRow
-                    key={`${index}-${attendee.name}-${attendee.email}`}
+                    key={index}
                     index={index}
                     attendee={attendee}
                     canRemove={attendees.length > 1}
@@ -301,9 +306,11 @@ export default function NewMeetingDialog() {
                 ))}
               </div>
 
-              <button type="button" className="add-attendee-button" onClick={addAttendee}>
-                + Add attendee
-              </button>
+              {canAddAttendee && (
+                <button type="button" className="add-attendee-button" onClick={addAttendee}>
+                  + Add attendee
+                </button>
+              )}
             </section>
           ) : null}
 

@@ -3,15 +3,19 @@ import './MeetingsSidebar.css';
 interface MeetingsSidebarProps {
   query: string;
   status: string;
+  dateFilter: string;
   onQueryChange: (value: string) => void;
   onStatusChange: (value: string) => void;
+  onDateChange: (value: string) => void;
 }
 
 export default function MeetingsSidebar({
   query,
   status,
+  dateFilter,
   onQueryChange,
   onStatusChange,
+  onDateChange,
 }: MeetingsSidebarProps) {
   return (
     <aside className="meetings-sidebar" aria-label="Meeting filters">
@@ -33,6 +37,15 @@ export default function MeetingsSidebar({
           <option value="completed">Completed</option>
           <option value="failed">Failed</option>
         </select>
+      </label>
+
+      <label className="meetings-sidebar__field">
+        <span>Date</span>
+        <input
+          type="date"
+          value={dateFilter}
+          onChange={(event) => onDateChange(event.target.value)}
+        />
       </label>
     </aside>
   );

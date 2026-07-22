@@ -7,6 +7,7 @@
   border-radius: 18px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  align-self: start;
 }
 
 .meetings-sidebar__field {
@@ -25,6 +26,7 @@
 
 .meetings-sidebar__field input,
 .meetings-sidebar__field select {
+  appearance: none;
   width: 100%;
   border: 1px solid #cbd5e1;
   border-radius: 12px;

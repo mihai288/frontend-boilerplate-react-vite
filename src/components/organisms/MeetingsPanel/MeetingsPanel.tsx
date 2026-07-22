@@ -4,25 +4,15 @@ import './MeetingsPanel.css';
 
 interface MeetingsPanelProps {
   meetings: Meeting[];
-  expandedMeetingId: string | null;
-  onToggleMeeting: (meetingId: string) => void;
+  onOpenMeeting: (meeting: Meeting) => void;
 }
 
-export default function MeetingsPanel({
-  meetings,
-  expandedMeetingId,
-  onToggleMeeting,
-}: MeetingsPanelProps) {
+export default function MeetingsPanel({ meetings, onOpenMeeting }: MeetingsPanelProps) {
   return (
     <section className="meetings-panel" aria-label="Meetings list">
       <div className="meetings-panel__list">
         {meetings.map((meeting) => (
-          <MeetingCard
-            key={meeting._id}
-            meeting={meeting}
-            isExpanded={expandedMeetingId === meeting._id}
-            onToggle={() => onToggleMeeting(meeting._id)}
-          />
+          <MeetingCard key={meeting._id} meeting={meeting} onOpen={() => onOpenMeeting(meeting)} />
         ))}
       </div>
     </section>

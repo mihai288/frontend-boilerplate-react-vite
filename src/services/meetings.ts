@@ -24,6 +24,9 @@ export interface Meeting {
   transcript?: string;
   attendees: MeetingAttendeeInput[];
   status: MeetingStatus;
+  userId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface MeetingRecord {
@@ -32,7 +35,10 @@ export interface MeetingRecord {
   date: string;
   description?: string;
   transcript?: string;
-  aiProcessingStatus: MeetingStatus;
+  attendees?: MeetingAttendeeInput[];
+  aiProcessingStatus?: MeetingStatus;
+  status?: MeetingStatus;
+  userId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,8 +55,11 @@ export async function createMeeting(payload: CreateMeetingPayload): Promise<Meet
     date: createdRecord.date,
     description: createdRecord.description,
     transcript: createdRecord.transcript,
-    attendees: payload.attendees ?? [],
-    status: createdRecord.aiProcessingStatus ?? 'idle',
+    attendees: createdRecord.attendees ?? payload.attendees ?? [],
+    status: createdRecord.status ?? createdRecord.aiProcessingStatus ?? 'idle',
+    userId: createdRecord.userId,
+    createdAt: createdRecord.createdAt,
+    updatedAt: createdRecord.updatedAt,
   };
 }
 
