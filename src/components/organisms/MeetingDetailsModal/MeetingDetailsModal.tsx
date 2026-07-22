@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Meeting, MeetingAttendeeInput } from '@services/meetings';
+import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
 import './MeetingDetailsModal.css';
 
 interface MeetingDetailsModalProps {
@@ -70,32 +71,31 @@ export default function MeetingDetailsModal({
         aria-labelledby="meeting-details-title"
         onClick={(event) => event.stopPropagation()}
       >
+        <button
+          type="button"
+          className="meeting-details-modal__close"
+          aria-label="Close meeting details"
+          onClick={onClose}
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+
         <div className="meeting-details-modal__header">
-          <div>
+          <div className="meeting-details-modal__heading">
             <p className="meeting-details-modal__kicker">Meeting details</p>
             <h2 id="meeting-details-title" className="meeting-details-modal__title">
               {isEditing ? 'Edit meeting' : draft.title}
             </h2>
-          </div>
-
-          <div className="meeting-details-modal__actions">
             {!isEditing ? (
-              <>
+              <div className="meeting-details-modal__toolbar">
                 <button
                   type="button"
                   className="meeting-details-modal__button meeting-details-modal__button--secondary"
                   onClick={() => setIsEditing(true)}
                 >
-                  Edit
+                  Edit meeting
                 </button>
-                <button
-                  type="button"
-                  className="meeting-details-modal__button meeting-details-modal__button--danger"
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
-              </>
+              </div>
             ) : null}
           </div>
         </div>
@@ -109,7 +109,7 @@ export default function MeetingDetailsModal({
 
             <div className="meeting-details-modal__section">
               <p className="meeting-details-modal__label">Status</p>
-              <span className="meeting-details-modal__badge">{draft.status}</span>
+              <MeetingStatusBadge status={draft.status} />
             </div>
 
             <div className="meeting-details-modal__section meeting-details-modal__section--wide">
@@ -218,13 +218,6 @@ export default function MeetingDetailsModal({
             </div>
 
             <div className="meeting-details-modal__footer">
-              <button
-                type="button"
-                className="meeting-details-modal__button meeting-details-modal__button--danger"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
               <button
                 type="button"
                 className="meeting-details-modal__button meeting-details-modal__button--success"

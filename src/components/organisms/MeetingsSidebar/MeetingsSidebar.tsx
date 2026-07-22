@@ -4,18 +4,22 @@ interface MeetingsSidebarProps {
   query: string;
   status: string;
   dateFilter: string;
+  sortBy: 'date' | 'name' | 'created';
   onQueryChange: (value: string) => void;
   onStatusChange: (value: string) => void;
   onDateChange: (value: string) => void;
+  onSortByChange: (value: 'date' | 'name' | 'created') => void;
 }
 
 export default function MeetingsSidebar({
   query,
   status,
   dateFilter,
+  sortBy,
   onQueryChange,
   onStatusChange,
   onDateChange,
+  onSortByChange,
 }: MeetingsSidebarProps) {
   return (
     <aside className="meetings-sidebar" aria-label="Meeting filters">
@@ -46,6 +50,18 @@ export default function MeetingsSidebar({
           value={dateFilter}
           onChange={(event) => onDateChange(event.target.value)}
         />
+      </label>
+
+      <label className="meetings-sidebar__field">
+        <span>Sort by</span>
+        <select
+          value={sortBy}
+          onChange={(event) => onSortByChange(event.target.value as 'date' | 'name' | 'created')}
+        >
+          <option value="date">Date</option>
+          <option value="name">Name</option>
+          <option value="created">Last created</option>
+        </select>
       </label>
     </aside>
   );

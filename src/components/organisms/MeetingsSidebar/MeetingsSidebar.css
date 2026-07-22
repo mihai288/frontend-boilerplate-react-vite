@@ -26,13 +26,17 @@
 
 .meetings-sidebar__field input,
 .meetings-sidebar__field select {
+  box-sizing: border-box;
   appearance: none;
   width: 100%;
+  height: 46px;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 0 14px;
   background: #ffffff;
   color: #0f172a;
+  font: inherit;
+  line-height: 1.2;
 }
 
 .meetings-sidebar__hint {

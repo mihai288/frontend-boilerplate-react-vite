@@ -110,9 +110,11 @@ export default function MeetingsPage() {
           query={query}
           status={status}
           dateFilter={dateFilter}
+          sortBy={sortBy}
           onQueryChange={setQuery}
           onStatusChange={setStatus}
           onDateChange={setDateFilter}
+          onSortByChange={setSortBy}
         />
 
         <section className="meetings-page__main" aria-live="polite">
@@ -126,22 +128,6 @@ export default function MeetingsPage() {
 
           {filteredMeetings.length > 0 ? (
             <>
-              <div className="meetings-page__toolbar">
-                <p className="meetings-page__toolbar-label">Sort by</p>
-                <label className="meetings-page__sort-select">
-                  <select
-                    value={sortBy}
-                    onChange={(event) =>
-                      setSortBy(event.target.value as 'date' | 'name' | 'created')
-                    }
-                  >
-                    <option value="date">Date</option>
-                    <option value="name">Name</option>
-                    <option value="created">Last created</option>
-                  </select>
-                </label>
-              </div>
-
               <MeetingsPanel
                 meetings={paginatedMeetings}
                 onOpenMeeting={(meeting) => setSelectedMeeting(meeting)}

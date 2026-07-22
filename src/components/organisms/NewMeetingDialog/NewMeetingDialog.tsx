@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useMeetingStore } from '../../../store/useMeetingStore';
-import Button from '../../atoms/Button/Button';
 import AttendeeRow, { type AttendeeDraft } from '../../molecules/AttendeeRow/AttendeeRow';
 import { createMeeting } from '../../../services/meetings';
 import './NewMeetingDialog.css';
@@ -16,10 +15,46 @@ export default function NewMeetingDialog() {
   const [attendees, setAttendees] = useState<AttendeeDraft[]>([{ name: '', email: '', role: '' }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [pendingRemoveIndex, setPendingRemoveIndex] = useState<number | null>(null);
+  const [newAttendeeIndex, setNewAttendeeIndex] = useState<number | null>(null);
+  const [stepOneHeight, setStepOneHeight] = useState<number | null>(null);
+  const [attendeeListHeight, setAttendeeListHeight] = useState<number | null>(null);
+  const stepOneSectionRef = useRef<HTMLElement | null>(null);
+  const attendeeListRef = useRef<HTMLDivElement | null>(null);
 
   const addMeeting = useMeetingStore((state) => state.addMeeting);
   const isDialogOpen = useMeetingStore((state) => state.isDialogOpen);
   const closeDialog = useMeetingStore((state) => state.closeDialog);
+
+  useLayoutEffect(() => {
+    if (step === 1 && stepOneSectionRef.current) {
+      setStepOneHeight(Math.ceil(stepOneSectionRef.current.getBoundingClientRect().height));
+    }
+  }, [step, title, meetingDateTime, description]);
+
+  useLayoutEffect(() => {
+    if (step !== 3 || !attendeeListRef.current) {
+      return;
+    }
+
+    const maxListHeight = window.innerWidth <= 900 ? 240 : 280;
+    const contentHeight = attendeeListRef.current.scrollHeight;
+    setAttendeeListHeight(Math.min(contentHeight, maxListHeight));
+  }, [step, attendees.length]);
+
+  useEffect(() => {
+    if (newAttendeeIndex === null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setNewAttendeeIndex(null);
+    }, 320);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [newAttendeeIndex]);
 
   if (!isDialogOpen) return null;
 
@@ -32,16 +67,41 @@ export default function NewMeetingDialog() {
   };
 
   const addAttendee = () => {
-    setAttendees((currentAttendees) => [...currentAttendees, { name: '', email: '', role: '' }]);
+    setAttendees((currentAttendees) => {
+      const nextIndex = currentAttendees.length;
+      const updatedAttendees = [...currentAttendees, { name: '', email: '', role: '' }];
+
+      setNewAttendeeIndex(nextIndex);
+
+      requestAnimationFrame(() => {
+        const nextNameInput = document.getElementById(
+          `attendee-name-${nextIndex}`,
+        ) as HTMLInputElement | null;
+        nextNameInput?.focus();
+        nextNameInput?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      });
+
+      return updatedAttendees;
+    });
   };
 
-  const removeAttendee = (index: number) => {
-    const isConfirmed = window.confirm('Ești sigur că vrei să ștergi acest participant?');
-    if (isConfirmed) {
-      setAttendees((currentAttendees) =>
-        currentAttendees.filter((_, attendeeIndex) => attendeeIndex !== index),
-      );
+  const requestRemoveAttendee = (index: number) => {
+    setPendingRemoveIndex(index);
+  };
+
+  const confirmRemoveAttendee = () => {
+    if (pendingRemoveIndex === null) {
+      return;
     }
+
+    setAttendees((currentAttendees) =>
+      currentAttendees.filter((_, attendeeIndex) => attendeeIndex !== pendingRemoveIndex),
+    );
+    setPendingRemoveIndex(null);
+  };
+
+  const cancelRemoveAttendee = () => {
+    setPendingRemoveIndex(null);
   };
 
   const resetForm = () => {
@@ -53,7 +113,16 @@ export default function NewMeetingDialog() {
     setTranscript('');
     setTranscriptFileName('');
     setAttendees([{ name: '', email: '', role: '' }]);
+    setPendingRemoveIndex(null);
+    setNewAttendeeIndex(null);
+    setStepOneHeight(null);
+    setAttendeeListHeight(null);
     setErrorMessage('');
+  };
+
+  const handleCloseDialog = () => {
+    resetForm();
+    closeDialog();
   };
 
   const handleTranscriptFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +155,10 @@ export default function NewMeetingDialog() {
       if (!normalizedDate || Number.isNaN(normalizedDate.getTime())) {
         setErrorMessage('Date and time are required.');
         return;
+      }
+
+      if (stepOneSectionRef.current) {
+        setStepOneHeight(Math.ceil(stepOneSectionRef.current.getBoundingClientRect().height));
       }
 
       setStep(2);
@@ -146,8 +219,7 @@ export default function NewMeetingDialog() {
     try {
       const createdMeeting = await createMeeting(meetingData);
       addMeeting(createdMeeting);
-      resetForm();
-      closeDialog();
+      handleCloseDialog();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to create the meeting.');
     } finally {
@@ -158,7 +230,7 @@ export default function NewMeetingDialog() {
   const canAddAttendee = attendees[attendees.length - 1]?.name.trim() !== '';
 
   return (
-    <div className="dialog-overlay" role="presentation" onClick={closeDialog}>
+    <div className="dialog-overlay" role="presentation">
       <div
         className="dialog-box"
         role="dialog"
@@ -166,16 +238,22 @@ export default function NewMeetingDialog() {
         aria-labelledby="new-meeting-title"
         onClick={(event) => event.stopPropagation()}
       >
+        <button
+          type="button"
+          className="dialog-close"
+          aria-label="Close new meeting dialog"
+          onClick={handleCloseDialog}
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+
         <div className="dialog-header">
           <div>
-            <p className="dialog-kicker">Meeting intake</p>
+            <p className="dialog-kicker">Create new meeting</p>
             <h2 className="dialog-title" id="new-meeting-title">
               Add Meeting
             </h2>
           </div>
-          <p className="dialog-subtitle">
-            Capture the meeting details, attendees, and transcript source in one submission.
-          </p>
         </div>
 
         <form className="meeting-form" onSubmit={handleSubmit}>
@@ -194,7 +272,11 @@ export default function NewMeetingDialog() {
           </div>
 
           {step === 1 ? (
-            <section className="form-section">
+            <section
+              className="form-section form-section--match-step-one"
+              ref={stepOneSectionRef}
+              style={stepOneHeight ? { height: `${stepOneHeight}px` } : undefined}
+            >
               <div className="section-heading">
                 <h3>Step 1 • Basics</h3>
                 <p>Start with the meeting title, date, and a short description.</p>
@@ -237,7 +319,10 @@ export default function NewMeetingDialog() {
           ) : null}
 
           {step === 2 ? (
-            <section className="form-section">
+            <section
+              className="form-section form-section--match-step-one"
+              style={stepOneHeight ? { height: `${stepOneHeight}px` } : undefined}
+            >
               <div className="section-heading">
                 <h3>Step 2 • Transcript</h3>
                 <p>Choose how you want to add the meeting transcript.</p>
@@ -293,36 +378,73 @@ export default function NewMeetingDialog() {
                 <p>Add the people who should be associated with this meeting.</p>
               </div>
 
-              <div className="attendee-list">
+              <div
+                ref={attendeeListRef}
+                className="attendee-list"
+                style={attendeeListHeight ? { height: `${attendeeListHeight}px` } : undefined}
+              >
                 {attendees.map((attendee, index) => (
                   <AttendeeRow
                     key={index}
                     index={index}
                     attendee={attendee}
                     canRemove={attendees.length > 1}
+                    isNew={index === newAttendeeIndex}
                     onChange={updateAttendee}
-                    onRemove={removeAttendee}
+                    onRemove={requestRemoveAttendee}
                   />
                 ))}
               </div>
 
-              {canAddAttendee && (
-                <button type="button" className="add-attendee-button" onClick={addAttendee}>
+              {pendingRemoveIndex !== null ? (
+                <div className="attendee-remove-confirm" role="status" aria-live="polite">
+                  <p className="attendee-remove-confirm__text">
+                    Remove attendee #{pendingRemoveIndex + 1}?
+                  </p>
+                  <div className="attendee-remove-confirm__actions">
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={cancelRemoveAttendee}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="attendee-remove-confirm__remove"
+                      onClick={confirmRemoveAttendee}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="add-attendee-action" aria-hidden={!canAddAttendee}>
+                <button
+                  type="button"
+                  className={`add-attendee-button ${!canAddAttendee ? 'add-attendee-button--hidden' : ''}`}
+                  onClick={addAttendee}
+                  disabled={!canAddAttendee}
+                  tabIndex={canAddAttendee ? 0 : -1}
+                >
                   + Add attendee
                 </button>
-              )}
+              </div>
             </section>
           ) : null}
 
           {errorMessage ? <p className="form-error">{errorMessage}</p> : null}
 
           <div className="dialog-buttons">
-            <Button text="Cancel" onClick={closeDialog} variant="danger" />
             {step > 1 ? (
               <button
                 type="button"
                 className="secondary-button"
-                onClick={() => setStep((current) => current - 1)}
+                onClick={() => {
+                  setPendingRemoveIndex(null);
+                  setStep((current) => current - 1);
+                }}
               >
                 Back
               </button>
@@ -333,7 +455,7 @@ export default function NewMeetingDialog() {
               </button>
             ) : (
               <button type="submit" className="submit-button" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Add'}
+                {isSubmitting ? 'Saving...' : 'Create'}
               </button>
             )}
           </div>

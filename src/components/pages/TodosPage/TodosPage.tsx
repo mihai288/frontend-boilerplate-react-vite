@@ -1,12 +1,12 @@
 import { FC } from 'react';
 
-const ProfilePage: FC = () => {
+const TodosPage: FC = () => {
   return (
     <div className="placeholder">
-      <h1>Profile</h1>
+      <h1>To Do List</h1>
       <p>placeholder</p>
     </div>
   );
 };
 
-export default ProfilePage;
+export default TodosPage;

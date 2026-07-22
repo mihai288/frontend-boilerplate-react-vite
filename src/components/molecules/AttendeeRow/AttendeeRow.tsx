@@ -10,6 +10,7 @@ interface AttendeeRowProps {
   index: number;
   attendee: AttendeeDraft;
   canRemove: boolean;
+  isNew?: boolean;
   onChange: (index: number, field: keyof AttendeeDraft, value: string) => void;
   onRemove: (index: number) => void;
 }
@@ -18,11 +19,12 @@ export default function AttendeeRow({
   index,
   attendee,
   canRemove,
+  isNew = false,
   onChange,
   onRemove,
 }: AttendeeRowProps) {
   return (
-    <div className="attendee-row">
+    <div className={`attendee-row ${isNew ? 'attendee-row--new' : ''}`}>
       <div className="attendee-field">
         <label htmlFor={`attendee-name-${index}`}>Name</label>
         <input

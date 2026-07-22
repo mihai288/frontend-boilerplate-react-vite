@@ -12,8 +12,8 @@
 }
 
 .meeting-status-badge--idle {
-  background: #f3e8b7;
-  color: #725c00;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .meeting-status-badge--processing {

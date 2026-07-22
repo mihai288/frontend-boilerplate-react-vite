@@ -5,6 +5,7 @@ import SignUpPage from '@pages/Auth/SignUpPage/SignUpPage';
 import MainLayout from '@templates/MainLayout';
 import MeetingsPage from '@pages/MeetingsPage/MeetingsPage';
 import ProfilePage from '@pages/ProfilePage/ProfilePage';
+import TodosPage from '@pages/TodosPage/TodosPage';
 
 export default function App() {
   return (
@@ -35,10 +36,7 @@ export default function App() {
         path="/todos"
         element={
           <MainLayout>
-            <div className="route-placeholder">
-              <h1>To-dos</h1>
-              <p>This is a placeholder page for your to-do workspace.</p>
-            </div>
+            <TodosPage />
           </MainLayout>
         }
       />
