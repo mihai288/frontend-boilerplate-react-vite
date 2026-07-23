@@ -1,0 +1,237 @@
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-page__hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.profile-page__hero-card,
+.profile-page__panel,
+.profile-page__stat-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+}
+
+.profile-page__hero-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.profile-page__eyebrow {
+  margin: 0;
+  color: #7c3aed;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.profile-page__hero-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.profile-page__hero-text {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.profile-page__hero-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.profile-page__avatar {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.profile-page__hero-card h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.profile-page__hero-card p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.profile-page__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-page__stat-card {
+  padding: 1.2rem;
+}
+
+.profile-page__stat-label {
+  margin: 0 0 0.35rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.profile-page__stat-value {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.profile-page__content {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1rem;
+}
+
+.profile-page__panel {
+  padding: 1.35rem;
+}
+
+.profile-page__panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.profile-page__panel-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.profile-page__action-button {
+  border: none;
+  border-radius: 999px;
+  background: #111827;
+  color: white;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.profile-page__action-button--secondary {
+  background: transparent;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.profile-page__edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.profile-page__edit-input {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.95rem;
+  color: #111827;
+  text-align: right;
+  width: 100%;
+  max-width: 220px;
+}
+
+.profile-page__detail-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.profile-page__detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.profile-page__detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-page__detail-label {
+  color: #6b7280;
+}
+
+.profile-page__detail-value {
+  font-weight: 600;
+  color: #111827;
+  text-align: right;
+}
+
+.profile-page__meeting-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.profile-page__meeting-item {
+  border-radius: 12px;
+  background: #f9fafb;
+  padding: 0.8rem 0.95rem;
+}
+
+.profile-page__meeting-item--clickable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.profile-page__meeting-item--clickable:hover {
+  background: #f0f0ff;
+}
+
+.profile-page__meeting-item strong {
+  display: block;
+  color: #111827;
+  margin-bottom: 0.2rem;
+}
+
+.profile-page__meeting-item span {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.profile-page__empty {
+  margin: 0;
+  color: #6b7280;
+}
+
+@media (max-width: 900px) {
+  .profile-page__hero,
+  .profile-page__content {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-page__stats {
+    grid-template-columns: 1fr;
+  }
+}

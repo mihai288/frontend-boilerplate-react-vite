@@ -1,12 +1,173 @@
-import { FC } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useMeetingStore } from '@/store/useMeetingStore';
+import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
+import type { Meeting } from '@services/meetings';
+import './ProfilePage.css';
 
-const ProfilePage: FC = () => {
+export default function ProfilePage() {
+  const user = useAuthStore((state) => state.user);
+  const setSession = useAuthStore((state) => state.setSession);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const meetings = useMeetingStore((state) => state.meetings);
+
+  const setMeetings = useMeetingStore((state) => state.setMeetings);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftName, setDraftName] = useState(user?.name || '');
+  const [draftEmail, setDraftEmail] = useState(user?.email || '');
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
+
+  const initials = useMemo(() => {
+    const name = isEditing ? draftName : user?.name;
+    return (
+      name
+        ?.split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase() || 'U'
+    );
+  }, [user?.name, draftName, isEditing]);
+
+  const completedMeetings = meetings.filter((meeting) => meeting.status === 'completed').length;
+  const activeMeetings = meetings.filter((meeting) => meeting.status === 'processing').length;
+  const totalMeetings = meetings.length;
+
+  const handleEdit = () => {
+    setDraftName(user?.name || '');
+    setDraftEmail(user?.email || '');
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (!draftName.trim()) return;
+    setSession({
+      access_token: accessToken ?? '',
+      user: { ...user, name: draftName.trim(), email: draftEmail.trim() },
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
   return (
-    <div className="placeholder">
-      <h1>Profile</h1>
-      <p>placeholder</p>
+    <div className="profile-page">
+      <section className="profile-page__hero">
+        <div className="profile-page__hero-card">
+          <div className="profile-page__avatar" aria-hidden="true">
+            {initials}
+          </div>
+          <div>
+            <h2>{user?.name || 'Anonymous user'}</h2>
+            <p>{user?.email || 'No email available'}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="profile-page__stats">
+        <div className="profile-page__stat-card">
+          <p className="profile-page__stat-label">Total meetings</p>
+          <p className="profile-page__stat-value">{totalMeetings}</p>
+        </div>
+        <div className="profile-page__stat-card">
+          <p className="profile-page__stat-label">Completed</p>
+          <p className="profile-page__stat-value">{completedMeetings}</p>
+        </div>
+        <div className="profile-page__stat-card">
+          <p className="profile-page__stat-label">In progress</p>
+          <p className="profile-page__stat-value">{activeMeetings}</p>
+        </div>
+      </section>
+
+      <section className="profile-page__content">
+        <div className="profile-page__panel">
+          <div className="profile-page__panel-header">
+            <h2>Profile details</h2>
+            {!isEditing ? (
+              <button type="button" className="profile-page__action-button" onClick={handleEdit}>
+                Edit profile
+              </button>
+            ) : (
+              <div className="profile-page__edit-actions">
+                <button
+                  type="button"
+                  className="profile-page__action-button profile-page__action-button--secondary"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </button>
+                <button type="button" className="profile-page__action-button" onClick={handleSave}>
+                  Save
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="profile-page__detail-list">
+            <div className="profile-page__detail-row">
+              <span className="profile-page__detail-label">Name</span>
+              {isEditing ? (
+                <input
+                  className="profile-page__edit-input"
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                />
+              ) : (
+                <span className="profile-page__detail-value">{user?.name || 'Not available'}</span>
+              )}
+            </div>
+            <div className="profile-page__detail-row">
+              <span className="profile-page__detail-label">Email</span>
+              {isEditing ? (
+                <input
+                  className="profile-page__edit-input"
+                  type="email"
+                  value={draftEmail}
+                  onChange={(e) => setDraftEmail(e.target.value)}
+                />
+              ) : (
+                <span className="profile-page__detail-value">{user?.email || 'Not available'}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="profile-page__panel">
+          <div className="profile-page__panel-header">
+            <h2>Recent meetings</h2>
+          </div>
+
+          {meetings.length > 0 ? (
+            <ul className="profile-page__meeting-list">
+              {meetings.slice(0, 3).map((meeting) => (
+                <li
+                  key={meeting._id}
+                  className="profile-page__meeting-item profile-page__meeting-item--clickable"
+                  onClick={() => setSelectedMeeting(meeting)}
+                >
+                  <strong>{meeting.title}</strong>
+                  <span>{new Date(meeting.date).toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="profile-page__empty">No meetings yet</p>
+          )}
+        </div>
+      </section>
+      {selectedMeeting ? (
+        <MeetingDetailsModal
+          meeting={selectedMeeting}
+          onClose={() => setSelectedMeeting(null)}
+          onSave={(updatedMeeting) => {
+            setMeetings(meetings.map((m) => (m._id === updatedMeeting._id ? updatedMeeting : m)));
+            setSelectedMeeting(null);
+          }}
+        />
+      ) : null}
     </div>
   );
-};
-
-export default ProfilePage;
+}
