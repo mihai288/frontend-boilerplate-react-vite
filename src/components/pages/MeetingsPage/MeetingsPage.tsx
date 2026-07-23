@@ -3,7 +3,7 @@ import Button from '@atoms/Button/Button';
 import MeetingsPanel from '@organisms/MeetingsPanel/MeetingsPanel';
 import MeetingsSidebar from '@organisms/MeetingsSidebar/MeetingsSidebar';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
-import { getMeetings, type Meeting } from '@services/meetings';
+import { getMeetings, type Meeting, updateMeeting } from '@services/meetings';
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './MeetingsPage.css';
 
@@ -190,10 +190,18 @@ export default function MeetingsPage() {
         <MeetingDetailsModal
           meeting={selectedMeeting}
           onClose={() => setSelectedMeeting(null)}
-          onSave={(updatedMeeting) => {
+          onSave={async (updatedMeeting) => {
+            const persistedMeeting = await updateMeeting(updatedMeeting._id, {
+              title: updatedMeeting.title,
+              date: updatedMeeting.date,
+              description: updatedMeeting.description,
+              transcript: updatedMeeting.transcript,
+              attendees: updatedMeeting.attendees,
+            });
+
             setMeetings(
               meetings.map((meeting) =>
-                meeting._id === updatedMeeting._id ? updatedMeeting : meeting,
+                meeting._id === persistedMeeting._id ? persistedMeeting : meeting,
               ),
             );
             setSelectedMeeting(null);

@@ -6,7 +6,7 @@ import './MeetingDetailsModal.css';
 interface MeetingDetailsModalProps {
   meeting: Meeting;
   onClose: () => void;
-  onSave: (updatedMeeting: Meeting) => void;
+  onSave: (updatedMeeting: Meeting) => Promise<void> | void;
 }
 
 function formatMeetingDate(value: string) {
@@ -22,6 +22,8 @@ export default function MeetingDetailsModal({
   onSave,
 }: MeetingDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [draft, setDraft] = useState<Meeting>({
     ...meeting,
     attendees: meeting.attendees ?? [],
@@ -33,6 +35,7 @@ export default function MeetingDetailsModal({
       attendees: meeting.attendees ?? [],
     });
     setIsEditing(false);
+    setSaveError('');
   }, [meeting]);
 
   const updateDraft = <K extends keyof Meeting>(field: K, value: Meeting[K]) => {
@@ -48,18 +51,28 @@ export default function MeetingDetailsModal({
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!draft.title.trim()) {
+      setSaveError('Title is required.');
       return;
     }
 
-    onSave({
-      ...draft,
-      title: draft.title.trim(),
-      description: draft.description?.trim() || undefined,
-      transcript: draft.transcript?.trim() || undefined,
-    });
-    setIsEditing(false);
+    setSaveError('');
+    setIsSaving(true);
+
+    try {
+      await onSave({
+        ...draft,
+        title: draft.title.trim(),
+        description: draft.description?.trim() ?? '',
+        transcript: draft.transcript?.trim() ?? '',
+      });
+      setIsEditing(false);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to save meeting changes.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -218,12 +231,14 @@ export default function MeetingDetailsModal({
             </div>
 
             <div className="meeting-details-modal__footer">
+              {saveError ? <p className="meeting-details-modal__error">{saveError}</p> : null}
               <button
                 type="button"
                 className="meeting-details-modal__button meeting-details-modal__button--success"
                 onClick={handleSave}
+                disabled={isSaving}
               >
-                Save changes
+                {isSaving ? 'Saving...' : 'Save changes'}
               </button>
             </div>
           </div>

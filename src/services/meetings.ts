@@ -16,6 +16,15 @@ export interface CreateMeetingPayload {
   attendees?: MeetingAttendeeInput[];
 }
 
+export interface UpdateMeetingPayload {
+  title?: string;
+  date?: string;
+  description?: string;
+  transcript?: string;
+  attendees?: MeetingAttendeeInput[];
+  status?: MeetingStatus;
+}
+
 export interface Meeting {
   _id: string;
   title: string;
@@ -43,26 +52,43 @@ export interface MeetingRecord {
   updatedAt: string;
 }
 
+function mapMeetingRecord(
+  record: MeetingRecord,
+  fallbackAttendees: MeetingAttendeeInput[] = [],
+): Meeting {
+  return {
+    _id: record._id,
+    title: record.title,
+    date: record.date,
+    description: record.description,
+    transcript: record.transcript,
+    attendees: record.attendees ?? fallbackAttendees,
+    status: record.status ?? record.aiProcessingStatus ?? 'idle',
+    userId: record.userId,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+  };
+}
+
 export async function createMeeting(payload: CreateMeetingPayload): Promise<Meeting> {
   const createdRecord = await apiRequest<MeetingRecord>('/meetings', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 
-  return {
-    _id: createdRecord._id,
-    title: createdRecord.title,
-    date: createdRecord.date,
-    description: createdRecord.description,
-    transcript: createdRecord.transcript,
-    attendees: createdRecord.attendees ?? payload.attendees ?? [],
-    status: createdRecord.status ?? createdRecord.aiProcessingStatus ?? 'idle',
-    userId: createdRecord.userId,
-    createdAt: createdRecord.createdAt,
-    updatedAt: createdRecord.updatedAt,
-  };
+  return mapMeetingRecord(createdRecord, payload.attendees ?? []);
 }
 
-export function getMeetings() {
-  return apiRequest<Meeting[]>('/meetings');
+export async function updateMeeting(id: string, payload: UpdateMeetingPayload): Promise<Meeting> {
+  const updatedRecord = await apiRequest<MeetingRecord>(`/meetings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+
+  return mapMeetingRecord(updatedRecord, payload.attendees ?? []);
+}
+
+export async function getMeetings(): Promise<Meeting[]> {
+  const records = await apiRequest<MeetingRecord[]>('/meetings');
+  return records.map((record) => mapMeetingRecord(record));
 }
