@@ -8,6 +8,12 @@ export interface MeetingAttendeeInput {
   role?: string;
 }
 
+export interface MeetingActionItem {
+  task: string;
+  assignee: string;
+  checked?: boolean;
+}
+
 export interface CreateMeetingPayload {
   title: string;
   date: string;
@@ -22,6 +28,7 @@ export interface UpdateMeetingPayload {
   description?: string;
   transcript?: string;
   attendees?: MeetingAttendeeInput[];
+  actionItems?: MeetingActionItem[];
   status?: MeetingStatus;
 }
 
@@ -33,6 +40,9 @@ export interface Meeting {
   transcript?: string;
   attendees: MeetingAttendeeInput[];
   status: MeetingStatus;
+  summary?: string;
+  keyPoints: string[];
+  actionItems: MeetingActionItem[];
   userId?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -47,6 +57,9 @@ export interface MeetingRecord {
   attendees?: MeetingAttendeeInput[];
   aiProcessingStatus?: MeetingStatus;
   status?: MeetingStatus;
+  summary?: string;
+  keyPoints?: string[];
+  actionItems?: MeetingActionItem[];
   userId?: string;
   createdAt: string;
   updatedAt: string;
@@ -64,6 +77,13 @@ function mapMeetingRecord(
     transcript: record.transcript,
     attendees: record.attendees ?? fallbackAttendees,
     status: record.status ?? record.aiProcessingStatus ?? 'idle',
+    summary: record.summary,
+    keyPoints: record.keyPoints ?? [],
+    actionItems: (record.actionItems ?? []).map((item) => ({
+      task: item.task,
+      assignee: item.assignee,
+      checked: Boolean(item.checked),
+    })),
     userId: record.userId,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -94,6 +114,11 @@ export async function processMeeting(id: string): Promise<Meeting> {
   });
 
   return mapMeetingRecord(updatedRecord);
+}
+
+export async function getMeetingById(id: string): Promise<Meeting> {
+  const meetingRecord = await apiRequest<MeetingRecord>(`/meetings/${id}`);
+  return mapMeetingRecord(meetingRecord);
 }
 
 export async function getMeetings(): Promise<Meeting[]> {

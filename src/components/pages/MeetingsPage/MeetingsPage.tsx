@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@atoms/Button/Button';
 import MeetingsPanel from '@organisms/MeetingsPanel/MeetingsPanel';
 import MeetingsSidebar from '@organisms/MeetingsSidebar/MeetingsSidebar';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
-import { getMeetings, processMeeting, type Meeting, updateMeeting } from '@services/meetings';
+import {
+  getMeetingById,
+  getMeetings,
+  processMeeting,
+  type Meeting,
+  updateMeeting,
+} from '@services/meetings';
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './MeetingsPage.css';
 
@@ -22,7 +28,58 @@ export default function MeetingsPage() {
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'created'>('date');
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const processingPollRef = useRef<number | null>(null);
   const PAGE_SIZE = 10;
+
+  const stopProcessingPolling = () => {
+    if (processingPollRef.current !== null) {
+      window.clearInterval(processingPollRef.current);
+      processingPollRef.current = null;
+    }
+  };
+
+  const upsertMeeting = (updatedMeeting: Meeting) => {
+    const currentMeetings = useMeetingStore.getState().meetings;
+    const existingIndex = currentMeetings.findIndex(
+      (meeting) => meeting._id === updatedMeeting._id,
+    );
+
+    if (existingIndex === -1) {
+      setMeetings([updatedMeeting, ...currentMeetings]);
+      return;
+    }
+
+    setMeetings(
+      currentMeetings.map((meeting) =>
+        meeting._id === updatedMeeting._id ? updatedMeeting : meeting,
+      ),
+    );
+  };
+
+  const startProcessingPolling = (meetingId: string) => {
+    stopProcessingPolling();
+
+    const pollMeeting = async () => {
+      try {
+        const refreshedMeeting = await getMeetingById(meetingId);
+        upsertMeeting(refreshedMeeting);
+        setSelectedMeeting((current) =>
+          current && current._id === refreshedMeeting._id ? refreshedMeeting : current,
+        );
+
+        if (refreshedMeeting.status === 'completed' || refreshedMeeting.status === 'failed') {
+          stopProcessingPolling();
+        }
+      } catch {
+        stopProcessingPolling();
+      }
+    };
+
+    void pollMeeting();
+    processingPollRef.current = window.setInterval(() => {
+      void pollMeeting();
+    }, 3000);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -99,6 +156,12 @@ export default function MeetingsPage() {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    return () => {
+      stopProcessingPolling();
+    };
+  }, []);
 
   const paginatedMeetings = filteredMeetings.slice(
     (safeCurrentPage - 1) * PAGE_SIZE,
@@ -197,6 +260,7 @@ export default function MeetingsPage() {
               description: updatedMeeting.description,
               transcript: updatedMeeting.transcript,
               attendees: updatedMeeting.attendees,
+              actionItems: updatedMeeting.actionItems,
             });
 
             setMeetings(
@@ -207,16 +271,27 @@ export default function MeetingsPage() {
             setSelectedMeeting(null);
           }}
           onProcess={async (meetingId) => {
-            const processedMeeting = await processMeeting(meetingId);
+            const processingMeeting = await processMeeting(meetingId);
+            upsertMeeting(processingMeeting);
+            setSelectedMeeting(processingMeeting);
 
-            setMeetings(
-              meetings.map((meeting) =>
-                meeting._id === processedMeeting._id ? processedMeeting : meeting,
-              ),
+            if (processingMeeting.status === 'processing') {
+              startProcessingPolling(processingMeeting._id);
+            } else {
+              stopProcessingPolling();
+            }
+
+            return processingMeeting;
+          }}
+          onUpdateActionItems={async (meetingId, actionItems) => {
+            const persistedMeeting = await updateMeeting(meetingId, { actionItems });
+
+            upsertMeeting(persistedMeeting);
+            setSelectedMeeting((current) =>
+              current && current._id === persistedMeeting._id ? persistedMeeting : current,
             );
 
-            setSelectedMeeting(processedMeeting);
-            return processedMeeting;
+            return persistedMeeting;
           }}
         />
       ) : null}

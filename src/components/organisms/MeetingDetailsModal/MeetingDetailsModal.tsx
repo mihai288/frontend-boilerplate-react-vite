@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { Meeting, MeetingAttendeeInput } from '@services/meetings';
+import { useEffect, useRef, useState } from 'react';
+import type { Meeting, MeetingActionItem, MeetingAttendeeInput } from '@services/meetings';
 import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
 import './MeetingDetailsModal.css';
 
@@ -8,17 +8,13 @@ interface MeetingDetailsModalProps {
   onClose: () => void;
   onSave: (updatedMeeting: Meeting) => Promise<void> | void;
   onProcess: (meetingId: string) => Promise<Meeting>;
+  onUpdateActionItems: (
+    meetingId: string,
+    actionItems: MeetingActionItem[],
+  ) => Promise<Meeting>;
 }
 
-type DetailsTab = 'description' | 'transcript' | 'attendees' | 'ai-results';
-
-type MeetingWithAiFields = Meeting & {
-  aiResults?: string;
-  summary?: string;
-  actionItems?: string[] | string;
-  decisions?: string[] | string;
-  nextSteps?: string[] | string;
-};
+type DetailsTab = 'description' | 'transcript' | 'ai-results';
 
 function formatMeetingDate(value: string) {
   return new Intl.DateTimeFormat('en', {
@@ -32,32 +28,45 @@ export default function MeetingDetailsModal({
   onClose,
   onSave,
   onProcess,
+  onUpdateActionItems,
 }: MeetingDetailsModalProps) {
   const tabs: Array<{ id: DetailsTab; label: string }> = [
     { id: 'description', label: 'Description' },
     { id: 'transcript', label: 'Transcript' },
-    { id: 'attendees', label: 'Attendees' },
     { id: 'ai-results', label: 'AI results' },
   ];
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [saveError, setSaveError] = useState('');
+  const [isSavingActionItems, setIsSavingActionItems] = useState(false);
   const [activeTab, setActiveTab] = useState<DetailsTab>('description');
+  const [saveError, setSaveError] = useState('');
+  const [processError, setProcessError] = useState('');
+  const previousMeetingIdRef = useRef(meeting._id);
   const [draft, setDraft] = useState<Meeting>({
     ...meeting,
     attendees: meeting.attendees ?? [],
+    keyPoints: meeting.keyPoints ?? [],
+    actionItems: meeting.actionItems ?? [],
   });
 
   useEffect(() => {
+    const isDifferentMeeting = previousMeetingIdRef.current !== meeting._id;
+
     setDraft({
       ...meeting,
       attendees: meeting.attendees ?? [],
+      keyPoints: meeting.keyPoints ?? [],
+      actionItems: meeting.actionItems ?? [],
     });
     setIsEditing(false);
-    setActiveTab('description');
+    if (isDifferentMeeting) {
+      setActiveTab('description');
+    }
     setSaveError('');
+    setProcessError('');
+    previousMeetingIdRef.current = meeting._id;
   }, [meeting]);
 
   const updateDraft = <K extends keyof Meeting>(field: K, value: Meeting[K]) => {
@@ -71,6 +80,34 @@ export default function MeetingDetailsModal({
         attendeeIndex === index ? { ...attendee, [field]: value } : attendee,
       ),
     }));
+  };
+
+  const handleToggleActionItem = async (index: number) => {
+    const previousActionItems = draft.actionItems;
+    const toggledActionItems = previousActionItems.map((item, itemIndex) =>
+      itemIndex === index ? { ...item, checked: !item.checked } : item,
+    );
+
+    setDraft((current) => ({ ...current, actionItems: toggledActionItems }));
+    setProcessError('');
+    setIsSavingActionItems(true);
+
+    try {
+      const persistedMeeting = await onUpdateActionItems(draft._id, toggledActionItems);
+      setDraft({
+        ...persistedMeeting,
+        attendees: persistedMeeting.attendees ?? [],
+        keyPoints: persistedMeeting.keyPoints ?? [],
+        actionItems: persistedMeeting.actionItems ?? [],
+      });
+    } catch (error) {
+      setDraft((current) => ({ ...current, actionItems: previousActionItems }));
+      setProcessError(
+        error instanceof Error ? error.message : 'Unable to update action item completion.',
+      );
+    } finally {
+      setIsSavingActionItems(false);
+    }
   };
 
   const handleSave = async () => {
@@ -98,51 +135,23 @@ export default function MeetingDetailsModal({
   };
 
   const handleProcess = async () => {
-    setSaveError('');
+    setProcessError('');
     setIsProcessing(true);
 
     try {
-      const processedMeeting = await onProcess(draft._id);
+      const processingMeeting = await onProcess(draft._id);
       setDraft({
-        ...processedMeeting,
-        attendees: processedMeeting.attendees ?? [],
+        ...processingMeeting,
+        attendees: processingMeeting.attendees ?? [],
+        keyPoints: processingMeeting.keyPoints ?? [],
+        actionItems: processingMeeting.actionItems ?? [],
       });
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Unable to process this meeting.');
+      setProcessError(error instanceof Error ? error.message : 'Unable to process this meeting.');
     } finally {
       setIsProcessing(false);
     }
   };
-
-  const aiDraft = draft as MeetingWithAiFields;
-  const aiSections = [
-    {
-      label: 'Summary',
-      value: aiDraft.summary,
-    },
-    {
-      label: 'Action items',
-      value: aiDraft.actionItems,
-    },
-    {
-      label: 'Decisions',
-      value: aiDraft.decisions,
-    },
-    {
-      label: 'Next steps',
-      value: aiDraft.nextSteps,
-    },
-    {
-      label: 'AI output',
-      value: aiDraft.aiResults,
-    },
-  ].filter((item) => {
-    if (Array.isArray(item.value)) {
-      return item.value.length > 0;
-    }
-
-    return Boolean(item.value && String(item.value).trim().length > 0);
-  });
 
   return (
     <div className="meeting-details-modal-overlay" role="presentation" onClick={onClose}>
@@ -173,63 +182,58 @@ export default function MeetingDetailsModal({
                 <p className="meeting-details-modal__label">Status</p>
                 <MeetingStatusBadge status={draft.status} />
               </div>
+
               <div className="meeting-details-modal__meta-item">
                 <p className="meeting-details-modal__label">Date</p>
                 <p className="meeting-details-modal__value">{formatMeetingDate(draft.date)}</p>
               </div>
             </div>
+
             {!isEditing ? (
-              <div className="meeting-details-modal__header-actions">
+              <div className="meeting-details-modal__toolbar">
                 <button
                   type="button"
                   className="meeting-details-modal__button meeting-details-modal__button--primary"
                   onClick={handleProcess}
                   disabled={isProcessing || draft.status === 'processing'}
                 >
-                  {isProcessing ? 'Processing...' : 'Process'}
+                  {isProcessing || draft.status === 'processing' ? 'Processing...' : 'Process'}
                 </button>
-                <p className="meeting-details-modal__helper-text">
-                  Run AI processing after transcript updates.
-                </p>
+                <button
+                  type="button"
+                  className="meeting-details-modal__button meeting-details-modal__button--secondary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit meeting
+                </button>
               </div>
             ) : null}
           </div>
         </div>
 
-        {!isEditing && saveError ? (
-          <p className="meeting-details-modal__error">{saveError}</p>
-        ) : null}
-
         {!isEditing ? (
           <div className="meeting-details-modal__content">
-            <div className="meeting-details-modal__tabs-row">
-              <div
-                className="meeting-details-modal__tabs"
-                role="tablist"
-                aria-label="Meeting details tabs"
-              >
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === tab.id}
-                    aria-controls={`meeting-details-panel-${tab.id}`}
-                    id={`meeting-details-tab-${tab.id}`}
-                    className={`meeting-details-modal__tab${activeTab === tab.id ? ' meeting-details-modal__tab--active' : ''}`}
-                    onClick={() => setActiveTab(tab.id)}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                className="meeting-details-modal__button meeting-details-modal__button--tertiary"
-                onClick={() => setIsEditing(true)}
-              >
-                Edit meeting
-              </button>
+            {processError ? <p className="meeting-details-modal__error">{processError}</p> : null}
+
+            <div
+              className="meeting-details-modal__tabs"
+              role="tablist"
+              aria-label="Meeting details tabs"
+            >
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`meeting-details-panel-${tab.id}`}
+                  id={`meeting-details-tab-${tab.id}`}
+                  className={`meeting-details-modal__tab${activeTab === tab.id ? ' meeting-details-modal__tab--active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             <div
@@ -241,72 +245,88 @@ export default function MeetingDetailsModal({
               {activeTab === 'description' ? (
                 <>
                   <p className="meeting-details-modal__label">Description</p>
-                  <p className="meeting-details-modal__value">
-                    {draft.description || 'No description provided.'}
-                  </p>
+                  <div className="meeting-details-modal__scroll-region">
+                    <p className="meeting-details-modal__value">
+                      {draft.description || 'No description provided.'}
+                    </p>
+                  </div>
                 </>
               ) : null}
 
               {activeTab === 'transcript' ? (
                 <>
                   <p className="meeting-details-modal__label">Transcript</p>
-                  <p className="meeting-details-modal__value">
-                    {draft.transcript || 'Transcript not available yet.'}
-                  </p>
-                </>
-              ) : null}
-
-              {activeTab === 'attendees' ? (
-                <>
-                  <p className="meeting-details-modal__label">Attendees</p>
-                  {draft.attendees.length > 0 ? (
-                    <div className="meeting-details-modal__attendees">
-                      {draft.attendees.map((attendee, index) => (
-                        <div
-                          key={`${attendee.name}-${index}`}
-                          className="meeting-details-modal__attendee"
-                        >
-                          <span className="meeting-details-modal__attendee-name">
-                            {attendee.name || 'Unnamed attendee'}
-                          </span>
-                          <span className="meeting-details-modal__attendee-meta">
-                            {attendee.email || 'No email'}
-                            {attendee.role ? ` • ${attendee.role}` : ''}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="meeting-details-modal__value">No attendees added.</p>
-                  )}
+                  <div className="meeting-details-modal__scroll-region">
+                    <p className="meeting-details-modal__value">
+                      {draft.transcript || 'Transcript not available yet.'}
+                    </p>
+                  </div>
                 </>
               ) : null}
 
               {activeTab === 'ai-results' ? (
                 <>
-                  <p className="meeting-details-modal__label">AI results</p>
-                  {aiSections.length > 0 ? (
-                    <div className="meeting-details-modal__ai-results">
-                      {aiSections.map((section) => (
-                        <div key={section.label} className="meeting-details-modal__ai-result-item">
-                          <p className="meeting-details-modal__ai-result-title">{section.label}</p>
-                          {Array.isArray(section.value) ? (
-                            <ul className="meeting-details-modal__ai-result-list">
-                              {section.value.map((entry) => (
-                                <li key={entry}>{entry}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="meeting-details-modal__value">{String(section.value)}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
+                  <p className="meeting-details-modal__label">AI summary</p>
+                  <div className="meeting-details-modal__scroll-region meeting-details-modal__scroll-region--summary">
                     <p className="meeting-details-modal__value">
-                      No AI results available yet. Run Process after adding a transcript.
+                      {draft.summary || 'No summary generated yet.'}
                     </p>
-                  )}
+                  </div>
+
+                  <div className="meeting-details-modal__ai-group">
+                    <p className="meeting-details-modal__label">Key points</p>
+                    <div className="meeting-details-modal__scroll-region">
+                      {draft.keyPoints.length > 0 ? (
+                        <ul className="meeting-details-modal__list">
+                          {draft.keyPoints.map((point) => (
+                            <li key={point}>{point}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="meeting-details-modal__value">No key points generated yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="meeting-details-modal__ai-group">
+                    <p className="meeting-details-modal__label">To-do list</p>
+                    <div className="meeting-details-modal__scroll-region meeting-details-modal__scroll-region--no-scroll">
+                      {draft.actionItems.length > 0 ? (
+                        <ul className="meeting-details-modal__todo-list">
+                          {draft.actionItems.map((item, index) => (
+                            <li
+                              key={`${item.task}-${item.assignee}-${index}`}
+                              className="meeting-details-modal__todo-list-item"
+                            >
+                              <label className="meeting-details-modal__todo-item">
+                                <input
+                                  type="checkbox"
+                                  className="meeting-details-modal__todo-checkbox"
+                                  checked={Boolean(item.checked)}
+                                  disabled={isSavingActionItems}
+                                  onChange={() => {
+                                    void handleToggleActionItem(index);
+                                  }}
+                                />
+                                <span className="meeting-details-modal__todo-content">
+                                  <span
+                                    className={`meeting-details-modal__todo-text${item.checked ? ' meeting-details-modal__todo-text--checked' : ''}`}
+                                  >
+                                    {item.task}
+                                  </span>
+                                  <span className="meeting-details-modal__todo-assignee">
+                                    Owner: {item.assignee}
+                                  </span>
+                                </span>
+                              </label>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="meeting-details-modal__value">No action items generated yet.</p>
+                      )}
+                    </div>
+                  </div>
                 </>
               ) : null}
             </div>
