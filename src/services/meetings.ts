@@ -88,6 +88,14 @@ export async function updateMeeting(id: string, payload: UpdateMeetingPayload): 
   return mapMeetingRecord(updatedRecord, payload.attendees ?? []);
 }
 
+export async function processMeeting(id: string): Promise<Meeting> {
+  const updatedRecord = await apiRequest<MeetingRecord>(`/meetings/${id}/process`, {
+    method: 'POST',
+  });
+
+  return mapMeetingRecord(updatedRecord);
+}
+
 export async function getMeetings(): Promise<Meeting[]> {
   const records = await apiRequest<MeetingRecord[]>('/meetings');
   return records.map((record) => mapMeetingRecord(record));

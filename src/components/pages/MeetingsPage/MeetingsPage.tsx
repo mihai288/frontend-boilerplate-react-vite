@@ -3,7 +3,7 @@ import Button from '@atoms/Button/Button';
 import MeetingsPanel from '@organisms/MeetingsPanel/MeetingsPanel';
 import MeetingsSidebar from '@organisms/MeetingsSidebar/MeetingsSidebar';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
-import { getMeetings, type Meeting, updateMeeting } from '@services/meetings';
+import { getMeetings, processMeeting, type Meeting, updateMeeting } from '@services/meetings';
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './MeetingsPage.css';
 
@@ -124,7 +124,7 @@ export default function MeetingsPage() {
             <div className="meetings-page__toolbar-copy">
               <h1 className="meetings-page__title">Meetings</h1>
               <p className="meetings-page__subtitle">
-                {filteredMeetings.length} meeting{filteredMeetings.length === 1 ? '' : 's'} found
+                {filteredMeetings.length} meeting{filteredMeetings.length === 1 ? '' : 's'}
               </p>
             </div>
 
@@ -205,6 +205,18 @@ export default function MeetingsPage() {
               ),
             );
             setSelectedMeeting(null);
+          }}
+          onProcess={async (meetingId) => {
+            const processedMeeting = await processMeeting(meetingId);
+
+            setMeetings(
+              meetings.map((meeting) =>
+                meeting._id === processedMeeting._id ? processedMeeting : meeting,
+              ),
+            );
+
+            setSelectedMeeting(processedMeeting);
+            return processedMeeting;
           }}
         />
       ) : null}
