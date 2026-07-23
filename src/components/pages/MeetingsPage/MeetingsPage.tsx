@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Button from '@atoms/Button/Button';
 import MeetingsPanel from '@organisms/MeetingsPanel/MeetingsPanel';
 import MeetingsSidebar from '@organisms/MeetingsSidebar/MeetingsSidebar';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
@@ -13,6 +14,7 @@ export default function MeetingsPage() {
   const setMeetings = useMeetingStore((state) => state.setMeetings);
   const setLoading = useMeetingStore((state) => state.setLoading);
   const setErrorMessage = useMeetingStore((state) => state.setErrorMessage);
+  const openDialog = useMeetingStore((state) => state.openDialog);
 
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
@@ -118,6 +120,17 @@ export default function MeetingsPage() {
         />
 
         <section className="meetings-page__main" aria-live="polite">
+          <div className="meetings-page__toolbar">
+            <div className="meetings-page__toolbar-copy">
+              <h1 className="meetings-page__title">Meetings</h1>
+              <p className="meetings-page__subtitle">
+                {filteredMeetings.length} meeting{filteredMeetings.length === 1 ? '' : 's'} found
+              </p>
+            </div>
+
+            <Button text="Add meeting" onClick={openDialog} variant="success" />
+          </div>
+
           {isLoading ? <p className="meetings-page__state">Loading meetings...</p> : null}
           {errorMessage ? (
             <p className="meetings-page__state meetings-page__state--error">{errorMessage}</p>

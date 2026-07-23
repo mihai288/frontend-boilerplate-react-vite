@@ -2,7 +2,6 @@ import { ReactNode, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMeetingStore } from '../../store/useMeetingStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import Button from '../atoms/Button/Button';
 import NewMeetingDialog from '../organisms/NewMeetingDialog/NewMeetingDialog';
 import './MainLayout.css';
 
@@ -13,7 +12,6 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const openDialog = useMeetingStore((state) => state.openDialog);
   const setActiveTab = useMeetingStore((state) => state.setActiveTab);
   const user = useAuthStore((state) => state.user);
   const clearSession = useAuthStore((state) => state.clearSession);
@@ -83,8 +81,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </nav>
 
         <div className="header-actions">
-          <Button text="ADD MEETING" onClick={openDialog} variant="success" />
-
           <div className="profile-wrapper">
             <button
               type="button"
