@@ -2,6 +2,18 @@ const API_BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '/api';
 const AUTH_STORAGE_KEY = 'auth-session';
 
+function handleUnauthorized() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(AUTH_STORAGE_KEY);
+
+  if (!window.location.pathname.includes('/login')) {
+    window.location.replace('/login');
+  }
+}
+
 function readAccessToken() {
   if (typeof window === 'undefined') {
     return null;
@@ -67,13 +79,19 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   const body = await readResponseBody(response);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+
     const errorBody = body as { message?: string; error?: string } | string;
     const message =
       typeof errorBody === 'string'
         ? errorBody
         : (errorBody.message ?? errorBody.error ?? 'Request failed');
 
-    throw new Error(message);
+    const error = new Error(message) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
   }
 
   return body as T;

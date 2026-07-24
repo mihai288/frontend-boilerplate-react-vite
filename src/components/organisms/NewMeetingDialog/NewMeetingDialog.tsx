@@ -143,31 +143,11 @@ export default function NewMeetingDialog() {
   const goToNextStep = () => {
     setErrorMessage('');
 
-    if (step === 1) {
-      const normalizedTitle = title.trim();
-      const normalizedDate = meetingDateTime ? new Date(meetingDateTime) : null;
-
-      if (!normalizedTitle) {
-        setErrorMessage('Title is required.');
-        return;
-      }
-
-      if (!normalizedDate || Number.isNaN(normalizedDate.getTime())) {
-        setErrorMessage('Date and time are required.');
-        return;
-      }
-
-      if (stepOneSectionRef.current) {
-        setStepOneHeight(Math.ceil(stepOneSectionRef.current.getBoundingClientRect().height));
-      }
-
-      setStep(2);
-      return;
+    if (stepOneSectionRef.current) {
+      setStepOneHeight(Math.ceil(stepOneSectionRef.current.getBoundingClientRect().height));
     }
 
-    if (step === 2) {
-      setStep(3);
-    }
+    setStep((currentStep) => Math.min(currentStep + 1, 3));
   };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -192,11 +172,6 @@ export default function NewMeetingDialog() {
 
     if (!normalizedDate || Number.isNaN(normalizedDate.getTime())) {
       setErrorMessage('Date and time are required.');
-      return;
-    }
-
-    if (validAttendees.length === 0) {
-      setErrorMessage('Add at least one attendee with a name.');
       return;
     }
 
@@ -258,17 +233,41 @@ export default function NewMeetingDialog() {
 
         <form className="meeting-form" onSubmit={handleSubmit}>
           <div className="stepper" aria-label="Meeting setup progress">
-            <div className={`step-dot ${step >= 1 ? 'active' : ''}`}>
+            <button
+              type="button"
+              className={`step-dot ${step >= 1 ? 'active' : ''}`}
+              onClick={() => {
+                setPendingRemoveIndex(null);
+                setErrorMessage('');
+                setStep(1);
+              }}
+            >
               <span>1</span>
-            </div>
+            </button>
             <div className="step-line" />
-            <div className={`step-dot ${step >= 2 ? 'active' : ''}`}>
+            <button
+              type="button"
+              className={`step-dot ${step >= 2 ? 'active' : ''}`}
+              onClick={() => {
+                setPendingRemoveIndex(null);
+                setErrorMessage('');
+                setStep(2);
+              }}
+            >
               <span>2</span>
-            </div>
+            </button>
             <div className="step-line" />
-            <div className={`step-dot ${step >= 3 ? 'active' : ''}`}>
+            <button
+              type="button"
+              className={`step-dot ${step >= 3 ? 'active' : ''}`}
+              onClick={() => {
+                setPendingRemoveIndex(null);
+                setErrorMessage('');
+                setStep(3);
+              }}
+            >
               <span>3</span>
-            </div>
+            </button>
           </div>
 
           {step === 1 ? (
