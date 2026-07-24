@@ -1,11 +1,21 @@
 html {
-  overflow-y: scroll;
+  overflow: hidden;
+  height: 100%;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .layout-container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
   min-height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(29, 78, 216, 0.12), transparent 34%),
     linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
@@ -197,11 +207,20 @@ html {
 
 .layout-content {
   flex: 1;
+  min-height: 0;
   padding: 108px 30px 30px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.layout-content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .route-placeholder {

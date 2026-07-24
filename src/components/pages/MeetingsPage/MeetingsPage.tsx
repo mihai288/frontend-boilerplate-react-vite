@@ -196,57 +196,57 @@ export default function MeetingsPage() {
             <Button text="Add meeting" onClick={openDialog} variant="success" />
           </div>
 
-          {isLoading ? <p className="meetings-page__state">Loading meetings...</p> : null}
-          {errorMessage ? (
-            <p className="meetings-page__state meetings-page__state--error">{errorMessage}</p>
-          ) : null}
-          {!isLoading && !errorMessage && filteredMeetings.length === 0 ? (
-            <p className="meetings-page__state">No meetings match the current filters.</p>
-          ) : null}
+          <div className="meetings-page__list">
+            {isLoading ? <p className="meetings-page__state">Loading meetings...</p> : null}
+            {errorMessage ? (
+              <p className="meetings-page__state meetings-page__state--error">{errorMessage}</p>
+            ) : null}
+            {!isLoading && !errorMessage && filteredMeetings.length === 0 ? (
+              <p className="meetings-page__state">No meetings match the current filters.</p>
+            ) : null}
 
-          {filteredMeetings.length > 0 ? (
-            <>
+            {filteredMeetings.length > 0 ? (
               <MeetingsPanel
                 meetings={paginatedMeetings}
                 onOpenMeeting={(meeting) => setSelectedMeeting(meeting)}
               />
+            ) : null}
+          </div>
 
-              {totalPages > 1 ? (
-                <div className="meetings-page__pagination">
-                  <button
-                    type="button"
-                    className="meetings-page__pagination-button"
-                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                    disabled={safeCurrentPage === 1}
-                  >
-                    Previous
-                  </button>
+          {filteredMeetings.length > 0 && totalPages > 1 ? (
+            <div className="meetings-page__pagination">
+              <button
+                type="button"
+                className="meetings-page__pagination-button"
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={safeCurrentPage === 1}
+              >
+                Previous
+              </button>
 
-                  <label className="meetings-page__page-select">
-                    <span>Page</span>
-                    <select
-                      value={safeCurrentPage}
-                      onChange={(event) => setCurrentPage(Number(event.target.value))}
-                    >
-                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                        <option key={page} value={page}>
-                          {page} of {totalPages}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+              <label className="meetings-page__page-select">
+                <span>Page</span>
+                <select
+                  value={safeCurrentPage}
+                  onChange={(event) => setCurrentPage(Number(event.target.value))}
+                >
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <option key={page} value={page}>
+                      {page} of {totalPages}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                  <button
-                    type="button"
-                    className="meetings-page__pagination-button"
-                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                    disabled={safeCurrentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </div>
-              ) : null}
-            </>
+              <button
+                type="button"
+                className="meetings-page__pagination-button"
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={safeCurrentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           ) : null}
         </section>
       </div>

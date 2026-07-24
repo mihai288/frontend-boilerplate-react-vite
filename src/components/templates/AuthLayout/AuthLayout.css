@@ -2,12 +2,21 @@
   display: grid;
   place-items: center;
   min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
   padding: 28px 18px;
   background:
     radial-gradient(circle at top left, rgba(29, 78, 216, 0.14), transparent 36%),
     radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.1), transparent 32%),
     linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
   color: #0f172a;
+  scrollbar-width: none;
+}
+
+.auth-layout::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .auth-layout__panel {

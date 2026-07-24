@@ -275,28 +275,38 @@
 }
 
 .meeting-details-modal__scroll-region {
-  max-height: 230px;
+  max-height: 380px;
   overflow-y: auto;
   padding-right: 6px;
-}
-
-.meeting-details-modal__scroll-region--summary {
-  max-height: 170px;
-}
-
-.meeting-details-modal__scroll-region--no-scroll {
-  max-height: none;
-  overflow: visible;
-  padding-right: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
 }
 
 .meeting-details-modal__scroll-region::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+}
+
+.meeting-details-modal__scroll-region::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .meeting-details-modal__scroll-region::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.9);
+  background: #94a3b8;
   border-radius: 999px;
+}
+
+.meeting-details-modal__scroll-region::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.meeting-details-modal__scroll-region::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.meeting-details-modal__scroll-region::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .meeting-details-modal__todo-list {
@@ -363,6 +373,10 @@
 
 .meeting-details-modal__ai-group {
   margin-top: 14px;
+}
+
+.meeting-details-modal__ai-group .meeting-details-modal__label {
+  margin-top: 0;
 }
 
 .meeting-details-modal__attendees {

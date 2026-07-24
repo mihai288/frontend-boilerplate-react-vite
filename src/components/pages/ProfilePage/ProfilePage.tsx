@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
 import { deleteMeeting, processMeeting, type Meeting, updateMeeting } from '@services/meetings';
+import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
@@ -83,7 +84,7 @@ export default function ProfilePage() {
           <p className="profile-page__stat-value">{totalMeetings}</p>
         </div>
         <div className="profile-page__stat-card">
-          <p className="profile-page__stat-label">Completed</p>
+          <p className="profile-page__stat-label">Processed meetings</p>
           <p className="profile-page__stat-value">{completedMeetings}</p>
         </div>
         <div className="profile-page__stat-card">
@@ -159,7 +160,7 @@ export default function ProfilePage() {
                   onClick={() => setSelectedMeeting(meeting)}
                 >
                   <strong>{meeting.title}</strong>
-                  <span>{new Date(meeting.date).toLocaleString()}</span>
+                  <span>{formatMeetingDate(meeting.date)}</span>
                 </li>
               ))}
             </ul>

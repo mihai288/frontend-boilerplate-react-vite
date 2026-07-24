@@ -1,17 +1,11 @@
 import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
 import type { Meeting } from '@services/meetings';
+import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './MeetingCard.css';
 
 interface MeetingCardProps {
   meeting: Meeting;
   onOpen: () => void;
-}
-
-function formatMeetingDate(value: string) {
-  return new Intl.DateTimeFormat('en', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
 }
 
 export default function MeetingCard({ meeting, onOpen }: MeetingCardProps) {

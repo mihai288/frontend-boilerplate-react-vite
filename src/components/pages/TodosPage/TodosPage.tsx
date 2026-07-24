@@ -33,6 +33,8 @@ export default function TodosPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed'>('all');
   const [savingTodoKey, setSavingTodoKey] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     let isMounted = true;
@@ -100,7 +102,6 @@ export default function TodosPage() {
       });
     });
 
-    // Sortare stabilă ca să nu mai sară cardurile când bifezi
     return Array.from(groups.values()).sort((left, right) => {
       const dateDiff = new Date(right.meetingDate).getTime() - new Date(left.meetingDate).getTime();
 
@@ -161,15 +162,6 @@ export default function TodosPage() {
       });
   }, [selectedAttendee, selectedMeetingId, statusFilter, todoGroups]);
 
-  const completedCount = useMemo(
-    () =>
-      todoGroups.reduce(
-        (count, group) => count + group.items.filter((item) => item.checked).length,
-        0,
-      ),
-    [todoGroups],
-  );
-
   const totalCount = useMemo(
     () => todoGroups.reduce((count, group) => count + group.items.length, 0),
     [todoGroups],
@@ -178,6 +170,24 @@ export default function TodosPage() {
   const filteredCount = useMemo(
     () => filteredTodoGroups.reduce((count, group) => count + group.items.length, 0),
     [filteredTodoGroups],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredTodoGroups.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedAttendee, selectedMeetingId, statusFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedTodoGroups = filteredTodoGroups.slice(
+    (safeCurrentPage - 1) * PAGE_SIZE,
+    safeCurrentPage * PAGE_SIZE,
   );
 
   const handleToggleTodo = async (meetingId: string, actionIndex: number) => {
@@ -212,89 +222,86 @@ export default function TodosPage() {
 
   return (
     <section className="todos-page" aria-live="polite">
-      {isLoading ? <p className="todos-page__state">Loading tasks...</p> : null}
-      {errorMessage ? (
-        <p className="todos-page__state todos-page__state--error">{errorMessage}</p>
-      ) : null}
-      {saveError ? <p className="todos-page__state todos-page__state--error">{saveError}</p> : null}
+      <div className="todos-page__content">
+        <aside className="todos-page__sidebar" aria-label="Todo filters">
+          <label className="todos-page__filter-field">
+            <span>Attendee</span>
+            <select
+              value={selectedAttendee}
+              onChange={(event) => setSelectedAttendee(event.target.value)}
+            >
+              <option value="all">All</option>
+              {attendeeOptions.map((attendee) => (
+                <option key={attendee} value={attendee}>
+                  {attendee}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      {!isLoading && !errorMessage && totalCount === 0 ? (
-        <p className="todos-page__state">
-          No action items yet. Process a meeting transcript to generate tasks here.
-        </p>
-      ) : null}
+          <label className="todos-page__filter-field">
+            <span>Meeting</span>
+            <select
+              value={selectedMeetingId}
+              onChange={(event) => setSelectedMeetingId(event.target.value)}
+            >
+              <option value="all">All</option>
+              {meetingOptions.map(([meetingId, meetingTitle]) => (
+                <option key={meetingId} value={meetingId}>
+                  {meetingTitle}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      {todoGroups.length > 0 ? (
-        <div className="todos-page__content">
-          <aside className="todos-page__sidebar" aria-label="Todo filters">
-            <div className="todos-page__sidebar-section">
-              <div className="todos-page__sidebar-heading">
-                <h2 className="todos-page__sidebar-title">Filters</h2>
-                <button
-                  type="button"
-                  className="todos-page__clear-button"
-                  onClick={() => {
-                    setSelectedAttendee('all');
-                    setSelectedMeetingId('all');
-                    setStatusFilter('all');
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
+          <label className="todos-page__filter-field">
+            <span>Status</span>
+            <select
+              value={statusFilter}
+              onChange={(event) =>
+                setStatusFilter(event.target.value as 'all' | 'open' | 'closed')
+              }
+            >
+              <option value="all">All</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </label>
+        </aside>
 
-              <label className="todos-page__filter-field">
-                <span className="todos-page__filter-label">Attendee</span>
-                <select
-                  value={selectedAttendee}
-                  onChange={(event) => setSelectedAttendee(event.target.value)}
-                >
-                  <option value="all">All</option>
-                  {attendeeOptions.map((attendee) => (
-                    <option key={attendee} value={attendee}>
-                      {attendee}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="todos-page__filter-field">
-                <span className="todos-page__filter-label">Meeting</span>
-                <select
-                  value={selectedMeetingId}
-                  onChange={(event) => setSelectedMeetingId(event.target.value)}
-                >
-                  <option value="all">All</option>
-                  {meetingOptions.map(([meetingId, meetingTitle]) => (
-                    <option key={meetingId} value={meetingId}>
-                      {meetingTitle}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="todos-page__filter-field">
-                <span className="todos-page__filter-label">Status</span>
-                <select
-                  value={statusFilter}
-                  onChange={(event) =>
-                    setStatusFilter(event.target.value as 'all' | 'open' | 'closed')
-                  }
-                >
-                  <option value="all">All</option>
-                  <option value="open">Open</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </label>
+        <div className="todos-page__main">
+          <div className="todos-page__toolbar">
+            <div className="todos-page__toolbar-copy">
+              <h1 className="todos-page__title">To-dos</h1>
+              <p className="todos-page__subtitle">
+                {filteredCount} task{filteredCount === 1 ? '' : 's'}
+                {filteredCount !== totalCount ? ` of ${totalCount}` : ''}
+              </p>
             </div>
-          </aside>
+          </div>
 
-          <div className="todos-page__results">
-            {filteredCount === 0 ? (
+          <div className="todos-page__list">
+            {isLoading ? <p className="todos-page__state">Loading tasks...</p> : null}
+            {errorMessage ? (
+              <p className="todos-page__state todos-page__state--error">{errorMessage}</p>
+            ) : null}
+            {saveError ? (
+              <p className="todos-page__state todos-page__state--error">{saveError}</p>
+            ) : null}
+
+            {!isLoading && !errorMessage && totalCount === 0 ? (
+              <p className="todos-page__state">
+                No action items yet. Process a meeting transcript to generate tasks here.
+              </p>
+            ) : null}
+
+            {!isLoading && !errorMessage && totalCount > 0 && filteredCount === 0 ? (
               <p className="todos-page__state">No tasks match the selected filters.</p>
-            ) : (
+            ) : null}
+
+            {paginatedTodoGroups.length > 0 ? (
               <div className="todos-page__grid">
-                {filteredTodoGroups.map((group) => (
+                {paginatedTodoGroups.map((group) => (
                   <article key={group.id} className="todos-page__card">
                     <div className="todos-page__card-header">
                       <div className="todos-page__meta-block">
@@ -340,10 +347,46 @@ export default function TodosPage() {
                   </article>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
+
+          {filteredTodoGroups.length > 0 && totalPages > 1 ? (
+            <div className="todos-page__pagination">
+              <button
+                type="button"
+                className="todos-page__pagination-button"
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={safeCurrentPage === 1}
+              >
+                Previous
+              </button>
+
+              <label className="todos-page__page-select">
+                <span>Page</span>
+                <select
+                  value={safeCurrentPage}
+                  onChange={(event) => setCurrentPage(Number(event.target.value))}
+                >
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <option key={page} value={page}>
+                      {page} of {totalPages}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                className="todos-page__pagination-button"
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={safeCurrentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </section>
   );
 }

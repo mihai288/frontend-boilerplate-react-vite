@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Meeting, MeetingActionItem, MeetingAttendeeInput } from '@services/meetings';
 import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
+import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './MeetingDetailsModal.css';
 
 interface MeetingDetailsModalProps {
@@ -13,13 +14,6 @@ interface MeetingDetailsModalProps {
 }
 
 type DetailsTab = 'description' | 'attendees' | 'transcript' | 'ai-results';
-
-function formatMeetingDate(value: string) {
-  return new Intl.DateTimeFormat('en', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value));
-}
 
 export default function MeetingDetailsModal({
   meeting,
@@ -340,16 +334,15 @@ export default function MeetingDetailsModal({
 
               {activeTab === 'ai-results' ? (
                 <>
-                  <p className="meeting-details-modal__label">AI summary</p>
-                  <div className="meeting-details-modal__scroll-region meeting-details-modal__scroll-region--summary">
+                  <p className="meeting-details-modal__label">AI results</p>
+                  <div className="meeting-details-modal__scroll-region">
+                    <p className="meeting-details-modal__label">AI summary</p>
                     <p className="meeting-details-modal__value">
                       {draft.summary || 'No summary generated yet.'}
                     </p>
-                  </div>
 
-                  <div className="meeting-details-modal__ai-group">
-                    <p className="meeting-details-modal__label">Key points</p>
-                    <div className="meeting-details-modal__scroll-region">
+                    <div className="meeting-details-modal__ai-group">
+                      <p className="meeting-details-modal__label">Key points</p>
                       {draft.keyPoints.length > 0 ? (
                         <ul className="meeting-details-modal__list">
                           {draft.keyPoints.map((point) => (
@@ -360,11 +353,9 @@ export default function MeetingDetailsModal({
                         <p className="meeting-details-modal__value">No key points generated yet.</p>
                       )}
                     </div>
-                  </div>
 
-                  <div className="meeting-details-modal__ai-group">
-                    <p className="meeting-details-modal__label">To-do list</p>
-                    <div className="meeting-details-modal__scroll-region meeting-details-modal__scroll-region--no-scroll">
+                    <div className="meeting-details-modal__ai-group">
+                      <p className="meeting-details-modal__label">To-do list</p>
                       {draft.actionItems.length > 0 ? (
                         <ul className="meeting-details-modal__todo-list">
                           {draft.actionItems.map((item, index) => (
@@ -389,7 +380,7 @@ export default function MeetingDetailsModal({
                                     {item.task}
                                   </span>
                                   <span className="meeting-details-modal__todo-assignee">
-                                    Owner: {item.assignee}
+                                    Attendee: {item.assignee}
                                   </span>
                                 </span>
                               </label>
@@ -476,7 +467,11 @@ export default function MeetingDetailsModal({
 
             <div className="meeting-details-modal__footer">
               {isConfirmingDelete ? (
-                <div className="meeting-details-modal__delete-confirm" role="status" aria-live="polite">
+                <div
+                  className="meeting-details-modal__delete-confirm"
+                  role="status"
+                  aria-live="polite"
+                >
                   <p className="meeting-details-modal__delete-confirm-text">
                     Delete this meeting and all its attendees and to-dos?
                   </p>
