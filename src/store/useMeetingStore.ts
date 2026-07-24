@@ -9,6 +9,7 @@ interface MeetingStore {
   activeTab: string;
   setMeetings: (data: Meeting[]) => void;
   addMeeting: (meeting: Meeting) => void;
+  removeMeeting: (meetingId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setErrorMessage: (message: string) => void;
   openDialog: () => void;
@@ -24,6 +25,10 @@ export const useMeetingStore = create<MeetingStore>((set) => ({
   activeTab: 'meetings',
   setMeetings: (data) => set({ meetings: data }),
   addMeeting: (meeting) => set((state) => ({ meetings: [meeting, ...state.meetings] })),
+  removeMeeting: (meetingId) =>
+    set((state) => ({
+      meetings: state.meetings.filter((meeting) => meeting._id !== meetingId),
+    })),
   setLoading: (isLoading) => set({ isLoading }),
   setErrorMessage: (message) => set({ errorMessage: message }),
   openDialog: () => set({ isDialogOpen: true }),

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
-import { processMeeting, type Meeting, updateMeeting } from '@services/meetings';
+import { deleteMeeting, processMeeting, type Meeting, updateMeeting } from '@services/meetings';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const meetings = useMeetingStore((state) => state.meetings);
 
   const setMeetings = useMeetingStore((state) => state.setMeetings);
+  const removeMeeting = useMeetingStore((state) => state.removeMeeting);
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState(user?.name || '');
   const [draftEmail, setDraftEmail] = useState(user?.email || '');
@@ -182,6 +183,11 @@ export default function ProfilePage() {
             });
 
             upsertMeeting(persistedMeeting);
+            setSelectedMeeting(null);
+          }}
+          onDelete={async (meetingId) => {
+            await deleteMeeting(meetingId);
+            removeMeeting(meetingId);
             setSelectedMeeting(null);
           }}
           onProcess={async (meetingId) => {

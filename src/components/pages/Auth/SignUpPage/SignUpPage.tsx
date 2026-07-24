@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthFormShell from '../AuthFormShell';
 import { signUp } from '@services/auth';
 
@@ -39,27 +39,55 @@ export default function SignUpPage() {
   }
 
   return (
-    <AuthFormShell title="SIGN UP">
+    <AuthFormShell title="Create your account">
       <form className="auth-form__fields" onSubmit={handleSubmit}>
         <div className="auth-form__split">
           <div className="auth-form__row">
             <label htmlFor="firstName">First name</label>
-            <input id="firstName" name="firstName" type="text" placeholder="" required />
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              autoComplete="given-name"
+              placeholder="First"
+              required
+            />
           </div>
           <div className="auth-form__row">
             <label htmlFor="lastName">Last name</label>
-            <input id="lastName" name="lastName" type="text" placeholder="" required />
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Last"
+              required
+            />
           </div>
         </div>
 
         <div className="auth-form__row">
           <label htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" placeholder="" required />
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+          />
         </div>
 
         <div className="auth-form__row">
           <label htmlFor="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="" required />
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Create a password"
+            required
+          />
         </div>
 
         <div className="auth-form__row">
@@ -68,7 +96,8 @@ export default function SignUpPage() {
             id="confirmPassword"
             name="confirmPassword"
             type="password"
-            placeholder=""
+            autoComplete="new-password"
+            placeholder="Repeat your password"
             required
           />
         </div>
@@ -77,8 +106,15 @@ export default function SignUpPage() {
 
         <div className="auth-form__actions">
           <button type="submit" className="auth-form__submit" disabled={isSubmitting}>
-            {isSubmitting ? 'CREATING ACCOUNT...' : 'SIGN UP'}
+            {isSubmitting ? 'Creating account...' : 'Create account'}
           </button>
+
+          <p className="auth-form__switch">
+            <span>Already have an account?</span>
+            <Link to="/login" className="auth-form__switch-link">
+              Log in
+            </Link>
+          </p>
         </div>
       </form>
     </AuthFormShell>

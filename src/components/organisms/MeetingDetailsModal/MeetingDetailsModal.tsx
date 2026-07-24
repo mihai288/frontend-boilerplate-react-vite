@@ -7,6 +7,7 @@ interface MeetingDetailsModalProps {
   meeting: Meeting;
   onClose: () => void;
   onSave: (updatedMeeting: Meeting) => Promise<void> | void;
+  onDelete: (meetingId: string) => Promise<void>;
   onProcess: (meetingId: string) => Promise<Meeting>;
   onUpdateActionItems: (meetingId: string, actionItems: MeetingActionItem[]) => Promise<Meeting>;
 }
@@ -24,6 +25,7 @@ export default function MeetingDetailsModal({
   meeting,
   onClose,
   onSave,
+  onDelete,
   onProcess,
   onUpdateActionItems,
 }: MeetingDetailsModalProps) {
@@ -36,6 +38,8 @@ export default function MeetingDetailsModal({
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSavingActionItems, setIsSavingActionItems] = useState(false);
   const [activeTab, setActiveTab] = useState<DetailsTab>('description');
@@ -59,6 +63,7 @@ export default function MeetingDetailsModal({
       actionItems: meeting.actionItems ?? [],
     });
     setIsEditing(false);
+    setIsConfirmingDelete(false);
     if (isDifferentMeeting) {
       setActiveTab('description');
     }
@@ -129,6 +134,20 @@ export default function MeetingDetailsModal({
       setSaveError(error instanceof Error ? error.message : 'Unable to save meeting changes.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setSaveError('');
+    setIsDeleting(true);
+
+    try {
+      await onDelete(draft._id);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to delete meeting.');
+      setIsConfirmingDelete(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -456,15 +475,57 @@ export default function MeetingDetailsModal({
             </div>
 
             <div className="meeting-details-modal__footer">
-              {saveError ? <p className="meeting-details-modal__error">{saveError}</p> : null}
-              <button
-                type="button"
-                className="meeting-details-modal__button meeting-details-modal__button--success"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? 'Saving...' : 'Save changes'}
-              </button>
+              {isConfirmingDelete ? (
+                <div className="meeting-details-modal__delete-confirm" role="status" aria-live="polite">
+                  <p className="meeting-details-modal__delete-confirm-text">
+                    Delete this meeting and all its attendees and to-dos?
+                  </p>
+                  <div className="meeting-details-modal__delete-confirm-actions">
+                    <button
+                      type="button"
+                      className="meeting-details-modal__button meeting-details-modal__button--ghost"
+                      onClick={() => setIsConfirmingDelete(false)}
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="meeting-details-modal__button meeting-details-modal__button--danger"
+                      onClick={() => {
+                        void handleDelete();
+                      }}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="meeting-details-modal__button meeting-details-modal__button--danger"
+                  onClick={() => {
+                    setSaveError('');
+                    setIsConfirmingDelete(true);
+                  }}
+                  disabled={isSaving || isDeleting}
+                >
+                  Delete meeting
+                </button>
+              )}
+
+              <div className="meeting-details-modal__footer-end">
+                {saveError ? <p className="meeting-details-modal__error">{saveError}</p> : null}
+                <button
+                  type="button"
+                  className="meeting-details-modal__button meeting-details-modal__button--success"
+                  onClick={handleSave}
+                  disabled={isSaving || isDeleting || isConfirmingDelete}
+                >
+                  {isSaving ? 'Saving...' : 'Save changes'}
+                </button>
+              </div>
             </div>
           </div>
         )}

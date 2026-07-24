@@ -4,6 +4,7 @@ import MeetingsPanel from '@organisms/MeetingsPanel/MeetingsPanel';
 import MeetingsSidebar from '@organisms/MeetingsSidebar/MeetingsSidebar';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
 import {
+  deleteMeeting,
   getMeetingById,
   getMeetings,
   processMeeting,
@@ -18,6 +19,7 @@ export default function MeetingsPage() {
   const isLoading = useMeetingStore((state) => state.isLoading);
   const errorMessage = useMeetingStore((state) => state.errorMessage);
   const setMeetings = useMeetingStore((state) => state.setMeetings);
+  const removeMeeting = useMeetingStore((state) => state.removeMeeting);
   const setLoading = useMeetingStore((state) => state.setLoading);
   const setErrorMessage = useMeetingStore((state) => state.setErrorMessage);
   const openDialog = useMeetingStore((state) => state.openDialog);
@@ -268,6 +270,12 @@ export default function MeetingsPage() {
                 meeting._id === persistedMeeting._id ? persistedMeeting : meeting,
               ),
             );
+            setSelectedMeeting(null);
+          }}
+          onDelete={async (meetingId) => {
+            await deleteMeeting(meetingId);
+            stopProcessingPolling();
+            removeMeeting(meetingId);
             setSelectedMeeting(null);
           }}
           onProcess={async (meetingId) => {

@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthFormShell from '../AuthFormShell';
 import { login } from '@services/auth';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -24,7 +24,7 @@ export default function LoginPage() {
       });
 
       setSession(session);
-      navigate('/main', { replace: true });
+      navigate('/meetings', { replace: true });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to log in');
     } finally {
@@ -33,11 +33,18 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthFormShell title="LOG IN">
+    <AuthFormShell title="Welcome back">
       <form className="auth-form__fields" onSubmit={handleSubmit}>
         <div className="auth-form__row">
           <label htmlFor="loginEmail">Email</label>
-          <input id="loginEmail" name="email" type="email" placeholder="you@example.com" required />
+          <input
+            id="loginEmail"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+          />
         </div>
 
         <div className="auth-form__row">
@@ -46,6 +53,7 @@ export default function LoginPage() {
             id="loginPassword"
             name="password"
             type="password"
+            autoComplete="current-password"
             placeholder="Enter your password"
             required
           />
@@ -55,8 +63,15 @@ export default function LoginPage() {
 
         <div className="auth-form__actions">
           <button type="submit" className="auth-form__submit" disabled={isSubmitting}>
-            {isSubmitting ? 'LOGGING IN...' : 'LOG IN'}
+            {isSubmitting ? 'Logging in...' : 'Log in'}
           </button>
+
+          <p className="auth-form__switch">
+            <span>No account?</span>
+            <Link to="/signup" className="auth-form__switch-link">
+              Sign up
+            </Link>
+          </p>
         </div>
       </form>
     </AuthFormShell>

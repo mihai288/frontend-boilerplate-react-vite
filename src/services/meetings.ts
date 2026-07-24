@@ -125,3 +125,11 @@ export async function getMeetings(): Promise<Meeting[]> {
   const records = await apiRequest<MeetingRecord[]>('/meetings');
   return records.map((record) => mapMeetingRecord(record));
 }
+
+export async function deleteMeeting(id: string): Promise<Meeting> {
+  const deletedRecord = await apiRequest<MeetingRecord>(`/meetings/${id}`, {
+    method: 'DELETE',
+  });
+
+  return mapMeetingRecord(deletedRecord);
+}
