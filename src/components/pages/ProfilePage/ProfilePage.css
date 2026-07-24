@@ -63,7 +63,7 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #0c0c0c 0%, #131313 100%);
   color: white;
   font-size: 1.1rem;
   font-weight: 700;
@@ -129,11 +129,16 @@
 .profile-page__action-button {
   border: none;
   border-radius: 999px;
-  background: #111827;
+  background: #2563eb;
   color: white;
   padding: 0.6rem 0.9rem;
   font-size: 0.9rem;
   cursor: pointer;
+  font: bold;
+}
+.profile-page__action-button:hover {
+  background: #1e40af;
+  transition: background 0.15s;
 }
 
 .profile-page__action-button--secondary {

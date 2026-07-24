@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
-import type { Meeting } from '@services/meetings';
+import { processMeeting, type Meeting, updateMeeting } from '@services/meetings';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
@@ -33,6 +33,15 @@ export default function ProfilePage() {
   const completedMeetings = meetings.filter((meeting) => meeting.status === 'completed').length;
   const activeMeetings = meetings.filter((meeting) => meeting.status === 'processing').length;
   const totalMeetings = meetings.length;
+
+  const upsertMeeting = (updatedMeeting: Meeting) => {
+    setMeetings(
+      meetings.map((meeting) => (meeting._id === updatedMeeting._id ? updatedMeeting : meeting)),
+    );
+    setSelectedMeeting((current) =>
+      current && current._id === updatedMeeting._id ? updatedMeeting : current,
+    );
+  };
 
   const handleEdit = () => {
     setDraftName(user?.name || '');
@@ -162,9 +171,28 @@ export default function ProfilePage() {
         <MeetingDetailsModal
           meeting={selectedMeeting}
           onClose={() => setSelectedMeeting(null)}
-          onSave={(updatedMeeting) => {
-            setMeetings(meetings.map((m) => (m._id === updatedMeeting._id ? updatedMeeting : m)));
+          onSave={async (updatedMeeting) => {
+            const persistedMeeting = await updateMeeting(updatedMeeting._id, {
+              title: updatedMeeting.title,
+              date: updatedMeeting.date,
+              description: updatedMeeting.description,
+              transcript: updatedMeeting.transcript,
+              attendees: updatedMeeting.attendees,
+              actionItems: updatedMeeting.actionItems,
+            });
+
+            upsertMeeting(persistedMeeting);
             setSelectedMeeting(null);
+          }}
+          onProcess={async (meetingId) => {
+            const processingMeeting = await processMeeting(meetingId);
+            upsertMeeting(processingMeeting);
+            return processingMeeting;
+          }}
+          onUpdateActionItems={async (meetingId, actionItems) => {
+            const persistedMeeting = await updateMeeting(meetingId, { actionItems });
+            upsertMeeting(persistedMeeting);
+            return persistedMeeting;
           }}
         />
       ) : null}

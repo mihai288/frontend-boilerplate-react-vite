@@ -8,13 +8,10 @@ interface MeetingDetailsModalProps {
   onClose: () => void;
   onSave: (updatedMeeting: Meeting) => Promise<void> | void;
   onProcess: (meetingId: string) => Promise<Meeting>;
-  onUpdateActionItems: (
-    meetingId: string,
-    actionItems: MeetingActionItem[],
-  ) => Promise<Meeting>;
+  onUpdateActionItems: (meetingId: string, actionItems: MeetingActionItem[]) => Promise<Meeting>;
 }
 
-type DetailsTab = 'description' | 'transcript' | 'ai-results';
+type DetailsTab = 'description' | 'attendees' | 'transcript' | 'ai-results';
 
 function formatMeetingDate(value: string) {
   return new Intl.DateTimeFormat('en', {
@@ -32,6 +29,7 @@ export default function MeetingDetailsModal({
 }: MeetingDetailsModalProps) {
   const tabs: Array<{ id: DetailsTab; label: string }> = [
     { id: 'description', label: 'Description' },
+    { id: 'attendees', label: 'Attendees' },
     { id: 'transcript', label: 'Transcript' },
     { id: 'ai-results', label: 'AI results' },
   ];
@@ -153,6 +151,16 @@ export default function MeetingDetailsModal({
     }
   };
 
+  // Logică pentru a extrage persoanele recunoscute de AI, evitând dublurile
+  const manualAttendeeNames = new Set(draft.attendees.map((a) => a.name.toLowerCase().trim()));
+  const aiAssignees = Array.from(
+    new Set(
+      draft.actionItems
+        .map((item) => item.assignee.trim())
+        .filter((name) => name !== 'Unassigned' && name !== ''),
+    ),
+  ).filter((name) => !manualAttendeeNames.has(name.toLowerCase()));
+
   return (
     <div className="meeting-details-modal-overlay" role="presentation" onClick={onClose}>
       <div
@@ -253,6 +261,53 @@ export default function MeetingDetailsModal({
                 </>
               ) : null}
 
+              {activeTab === 'attendees' ? (
+                <>
+                  <p className="meeting-details-modal__label">Added by user</p>
+                  <div className="meeting-details-modal__scroll-region">
+                    {draft.attendees.length > 0 ? (
+                      <div className="meeting-details-modal__attendees">
+                        {draft.attendees.map((attendee, index) => (
+                          <div key={`manual-${index}`} className="meeting-details-modal__attendee">
+                            <span className="meeting-details-modal__attendee-name">
+                              {attendee.name}
+                            </span>
+                            {(attendee.role || attendee.email) && (
+                              <span className="meeting-details-modal__attendee-meta">
+                                {attendee.role} {attendee.role && attendee.email ? ' • ' : ''}{' '}
+                                {attendee.email}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="meeting-details-modal__value">No attendees registered.</p>
+                    )}
+                  </div>
+
+                  {aiAssignees.length > 0 ? (
+                    <div className="meeting-details-modal__ai-group">
+                      <p className="meeting-details-modal__label">Added by AI</p>
+                      <div className="meeting-details-modal__scroll-region">
+                        <div className="meeting-details-modal__attendees">
+                          {aiAssignees.map((assignee, index) => (
+                            <div key={`ai-${index}`} className="meeting-details-modal__attendee">
+                              <span className="meeting-details-modal__attendee-name">
+                                {assignee}
+                              </span>
+                              <span className="meeting-details-modal__attendee-meta">
+                                Added automatically from task assignments
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+
               {activeTab === 'transcript' ? (
                 <>
                   <p className="meeting-details-modal__label">Transcript</p>
@@ -323,7 +378,9 @@ export default function MeetingDetailsModal({
                           ))}
                         </ul>
                       ) : (
-                        <p className="meeting-details-modal__value">No action items generated yet.</p>
+                        <p className="meeting-details-modal__value">
+                          No action items generated yet.
+                        </p>
                       )}
                     </div>
                   </div>
