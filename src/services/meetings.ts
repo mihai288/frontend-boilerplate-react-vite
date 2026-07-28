@@ -1,6 +1,7 @@
 import { apiRequest } from './api';
 
 export type MeetingStatus = 'idle' | 'processing' | 'completed' | 'failed';
+export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 
 export interface MeetingAttendeeInput {
   name: string;
@@ -10,7 +11,9 @@ export interface MeetingAttendeeInput {
 
 export interface MeetingActionItem {
   task: string;
-  assignee: string;
+  assignee?: string;
+  deadline?: string;
+  status?: ActionItemStatus;
   checked?: boolean;
 }
 
@@ -81,8 +84,10 @@ function mapMeetingRecord(
     keyPoints: record.keyPoints ?? [],
     actionItems: (record.actionItems ?? []).map((item) => ({
       task: item.task,
-      assignee: item.assignee,
-      checked: Boolean(item.checked),
+      assignee: item.assignee || 'Unassigned',
+      deadline: item.deadline,
+      status: item.status ?? (item.checked ? 'DONE' : 'OPEN'),
+      checked: (item.status ?? (item.checked ? 'DONE' : 'OPEN')) === 'DONE',
     })),
     userId: record.userId,
     createdAt: record.createdAt,

@@ -458,10 +458,35 @@
   gap: 10px;
 }
 
+.meeting-details-modal__action-item-editor {
+  display: grid;
+  gap: 10px;
+}
+
 .meeting-details-modal__attendee-editor-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
+}
+
+.meeting-details-modal__action-item-editor-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.9fr 0.9fr auto;
+  gap: 10px;
+}
+
+.meeting-details-modal__remove-action-item {
+  border: none;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.meeting-details-modal__remove-action-item:hover {
+  background: #b91c1c;
 }
 
 .meeting-details-modal__footer {
@@ -512,6 +537,10 @@
   }
 
   .meeting-details-modal__attendee-editor-row {
+    grid-template-columns: 1fr;
+  }
+
+  .meeting-details-modal__action-item-editor-row {
     grid-template-columns: 1fr;
   }
 }

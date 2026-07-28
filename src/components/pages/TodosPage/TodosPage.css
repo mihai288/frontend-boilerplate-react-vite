@@ -233,6 +233,11 @@
   border-color: #cbd5e1;
 }
 
+.todos-page__task-copy {
+  display: grid;
+  gap: 6px;
+}
+
 .todos-page__task-toggle input {
   margin: 3px 0 0;
   accent-color: #2563eb;
@@ -247,6 +252,53 @@
 .todos-page__task-text--checked {
   color: #64748b;
   text-decoration: line-through;
+}
+
+.todos-page__task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.todos-page__task-meta-item {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.todos-page__status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.todos-page__status-badge--open {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.todos-page__status-badge--progress {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.todos-page__status-badge--done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.todos-page__status-badge--unknown {
+  background: #e2e8f0;
+  color: #475569;
 }
 
 .todos-page__pagination {

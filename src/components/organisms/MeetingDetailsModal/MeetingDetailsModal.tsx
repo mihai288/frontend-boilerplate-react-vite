@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Meeting, MeetingActionItem, MeetingAttendeeInput } from '@services/meetings';
+import type {
+  ActionItemStatus,
+  Meeting,
+  MeetingActionItem,
+  MeetingAttendeeInput,
+} from '@services/meetings';
 import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
 import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './MeetingDetailsModal.css';
@@ -14,6 +19,8 @@ interface MeetingDetailsModalProps {
 }
 
 type DetailsTab = 'description' | 'attendees' | 'transcript' | 'ai-results';
+
+const ACTION_ITEM_STATUS_OPTIONS: ActionItemStatus[] = ['OPEN', 'IN_PROGRESS', 'DONE', 'UNKNOWN'];
 
 export default function MeetingDetailsModal({
   meeting,
@@ -79,10 +86,55 @@ export default function MeetingDetailsModal({
     }));
   };
 
+  const updateActionItem = (
+    index: number,
+    field: keyof MeetingActionItem,
+    value: string | ActionItemStatus,
+  ) => {
+    setDraft((current) => ({
+      ...current,
+      actionItems: current.actionItems.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item,
+      ),
+    }));
+  };
+
+  const addActionItem = () => {
+    setDraft((current) => ({
+      ...current,
+      actionItems: [
+        ...current.actionItems,
+        {
+          task: '',
+          assignee: 'Unassigned',
+          deadline: '',
+          status: 'OPEN',
+          checked: false,
+        },
+      ],
+    }));
+  };
+
+  const removeActionItem = (index: number) => {
+    setDraft((current) => ({
+      ...current,
+      actionItems: current.actionItems.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
   const handleToggleActionItem = async (index: number) => {
     const previousActionItems = draft.actionItems;
     const toggledActionItems = previousActionItems.map((item, itemIndex) =>
-      itemIndex === index ? { ...item, checked: !item.checked } : item,
+      itemIndex === index
+        ? (() => {
+            const nextStatus: ActionItemStatus = item.status === 'DONE' ? 'OPEN' : 'DONE';
+            return {
+              ...item,
+              status: nextStatus,
+              checked: nextStatus === 'DONE',
+            };
+          })()
+        : item,
     );
 
     setDraft((current) => ({ ...current, actionItems: toggledActionItems }));
@@ -113,6 +165,11 @@ export default function MeetingDetailsModal({
       return;
     }
 
+    if (draft.actionItems.some((item) => !item.task?.trim())) {
+      setSaveError('Every action item must have a description.');
+      return;
+    }
+
     setSaveError('');
     setIsSaving(true);
 
@@ -122,6 +179,14 @@ export default function MeetingDetailsModal({
         title: draft.title.trim(),
         description: draft.description?.trim() ?? '',
         transcript: draft.transcript?.trim() ?? '',
+        actionItems: draft.actionItems.map((item) => ({
+          ...item,
+          task: item.task.trim(),
+          assignee: item.assignee?.trim() || 'Unassigned',
+          deadline: item.deadline || undefined,
+          status: item.status ?? 'OPEN',
+          checked: (item.status ?? 'OPEN') === 'DONE',
+        })),
       });
       setIsEditing(false);
     } catch (error) {
@@ -169,7 +234,7 @@ export default function MeetingDetailsModal({
   const aiAssignees = Array.from(
     new Set(
       draft.actionItems
-        .map((item) => item.assignee.trim())
+        .map((item) => (item.assignee ?? '').trim())
         .filter((name) => name !== 'Unassigned' && name !== ''),
     ),
   ).filter((name) => !manualAttendeeNames.has(name.toLowerCase()));
@@ -367,7 +432,7 @@ export default function MeetingDetailsModal({
                                 <input
                                   type="checkbox"
                                   className="meeting-details-modal__todo-checkbox"
-                                  checked={Boolean(item.checked)}
+                                  checked={item.status === 'DONE'}
                                   disabled={isSavingActionItems}
                                   onChange={() => {
                                     void handleToggleActionItem(index);
@@ -375,13 +440,21 @@ export default function MeetingDetailsModal({
                                 />
                                 <span className="meeting-details-modal__todo-content">
                                   <span
-                                    className={`meeting-details-modal__todo-text${item.checked ? ' meeting-details-modal__todo-text--checked' : ''}`}
+                                    className={`meeting-details-modal__todo-text${item.status === 'DONE' ? ' meeting-details-modal__todo-text--checked' : ''}`}
                                   >
                                     {item.task}
                                   </span>
                                   <span className="meeting-details-modal__todo-assignee">
-                                    Attendee: {item.assignee}
+                                    Attendee: {item.assignee || 'Unassigned'}
                                   </span>
+                                  <span className="meeting-details-modal__todo-assignee">
+                                    Status: {item.status ?? 'OPEN'}
+                                  </span>
+                                  {item.deadline ? (
+                                    <span className="meeting-details-modal__todo-assignee">
+                                      Deadline: {new Date(item.deadline).toLocaleDateString()}
+                                    </span>
+                                  ) : null}
                                 </span>
                               </label>
                             </li>
@@ -463,6 +536,63 @@ export default function MeetingDetailsModal({
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="meeting-details-modal__field meeting-details-modal__field--wide">
+              <span>Action items</span>
+              <div className="meeting-details-modal__action-item-editor">
+                {draft.actionItems.map((item, index) => (
+                  <div
+                    key={`${item.task}-${item.assignee}-${index}`}
+                    className="meeting-details-modal__action-item-editor-row"
+                  >
+                    <input
+                      value={item.task}
+                      placeholder="Task description"
+                      onChange={(event) => updateActionItem(index, 'task', event.target.value)}
+                    />
+                    <input
+                      value={item.assignee ?? ''}
+                      placeholder="Assignee"
+                      onChange={(event) =>
+                        updateActionItem(index, 'assignee', event.target.value || 'Unassigned')
+                      }
+                    />
+                    <input
+                      type="date"
+                      value={item.deadline ? item.deadline.slice(0, 10) : ''}
+                      onChange={(event) => updateActionItem(index, 'deadline', event.target.value)}
+                    />
+                    <select
+                      value={item.status ?? 'OPEN'}
+                      onChange={(event) =>
+                        updateActionItem(index, 'status', event.target.value as ActionItemStatus)
+                      }
+                    >
+                      {ACTION_ITEM_STATUS_OPTIONS.map((statusOption) => (
+                        <option key={statusOption} value={statusOption}>
+                          {statusOption}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="meeting-details-modal__remove-action-item"
+                      onClick={() => removeActionItem(index)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="meeting-details-modal__button meeting-details-modal__button--ghost"
+                onClick={addActionItem}
+              >
+                Add action item
+              </button>
             </div>
 
             <div className="meeting-details-modal__footer">

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getMeetings, updateMeeting } from '@services/meetings';
+import type { ActionItemStatus } from '@services/meetings';
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './TodosPage.css';
 
@@ -8,16 +9,43 @@ interface TodoGroup {
   meetingId: string;
   meetingTitle: string;
   meetingDate: string;
-  attendeeName: string;
   items: Array<{
     actionIndex: number;
     task: string;
+    deadline?: string;
+    status: string;
     checked: boolean;
   }>;
 }
 
-function getAssigneeLabel(assignee: string) {
-  return assignee.trim() || 'Unassigned';
+function formatDeadline(deadline?: string) {
+  if (!deadline) {
+    return '';
+  }
+
+  const parsedDate = new Date(deadline);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return '';
+  }
+
+  return parsedDate.toLocaleDateString();
+}
+
+function getStatusClass(status: string) {
+  if (status === 'DONE') {
+    return 'todos-page__status-badge--done';
+  }
+
+  if (status === 'IN_PROGRESS') {
+    return 'todos-page__status-badge--progress';
+  }
+
+  if (status === 'UNKNOWN') {
+    return 'todos-page__status-badge--unknown';
+  }
+
+  return 'todos-page__status-badge--open';
 }
 
 export default function TodosPage() {
@@ -28,7 +56,6 @@ export default function TodosPage() {
   const setLoading = useMeetingStore((state) => state.setLoading);
   const setErrorMessage = useMeetingStore((state) => state.setErrorMessage);
 
-  const [selectedAttendee, setSelectedAttendee] = useState('all');
   const [selectedMeetingId, setSelectedMeetingId] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed'>('all');
   const [savingTodoKey, setSavingTodoKey] = useState<string | null>(null);
@@ -72,15 +99,16 @@ export default function TodosPage() {
 
     meetings.forEach((meeting) => {
       meeting.actionItems.forEach((item, actionIndex) => {
-        const attendeeName = getAssigneeLabel(item.assignee);
-        const groupId = `${meeting._id}:${attendeeName}`;
+        const groupId = meeting._id;
         const existingGroup = groups.get(groupId);
 
         if (existingGroup) {
           existingGroup.items.push({
             actionIndex,
             task: item.task,
-            checked: Boolean(item.checked),
+            deadline: item.deadline,
+            status: item.status ?? 'OPEN',
+            checked: (item.status ?? 'OPEN') === 'DONE',
           });
           return;
         }
@@ -90,12 +118,13 @@ export default function TodosPage() {
           meetingId: meeting._id,
           meetingTitle: meeting.title,
           meetingDate: meeting.date,
-          attendeeName,
           items: [
             {
               actionIndex,
               task: item.task,
-              checked: Boolean(item.checked),
+              deadline: item.deadline,
+              status: item.status ?? 'OPEN',
+              checked: (item.status ?? 'OPEN') === 'DONE',
             },
           ],
         });
@@ -109,17 +138,9 @@ export default function TodosPage() {
         return dateDiff;
       }
 
-      return left.attendeeName.localeCompare(right.attendeeName);
+      return left.meetingTitle.localeCompare(right.meetingTitle);
     });
   }, [meetings]);
-
-  const attendeeOptions = useMemo(
-    () =>
-      Array.from(new Set(todoGroups.map((group) => group.attendeeName))).sort((a, b) =>
-        a.localeCompare(b),
-      ),
-    [todoGroups],
-  );
 
   const meetingOptions = useMemo(
     () =>
@@ -150,17 +171,13 @@ export default function TodosPage() {
         };
       })
       .filter((group) => {
-        if (selectedAttendee !== 'all' && group.attendeeName !== selectedAttendee) {
-          return false;
-        }
-
         if (selectedMeetingId !== 'all' && group.meetingId !== selectedMeetingId) {
           return false;
         }
 
         return group.items.length > 0;
       });
-  }, [selectedAttendee, selectedMeetingId, statusFilter, todoGroups]);
+  }, [selectedMeetingId, statusFilter, todoGroups]);
 
   const totalCount = useMemo(
     () => todoGroups.reduce((count, group) => count + group.items.length, 0),
@@ -177,7 +194,7 @@ export default function TodosPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedAttendee, selectedMeetingId, statusFilter]);
+  }, [selectedMeetingId, statusFilter]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -198,7 +215,17 @@ export default function TodosPage() {
     }
 
     const nextActionItems = meeting.actionItems.map((item, index) =>
-      index === actionIndex ? { ...item, checked: !item.checked } : item,
+      index === actionIndex
+        ? (() => {
+            const nextStatus: ActionItemStatus =
+              (item.status ?? 'OPEN') === 'DONE' ? 'OPEN' : 'DONE';
+            return {
+              ...item,
+              status: nextStatus,
+              checked: nextStatus === 'DONE',
+            };
+          })()
+        : item,
     );
     const todoKey = `${meetingId}:${actionIndex}`;
 
@@ -225,21 +252,6 @@ export default function TodosPage() {
       <div className="todos-page__content">
         <aside className="todos-page__sidebar" aria-label="Todo filters">
           <label className="todos-page__filter-field">
-            <span>Attendee</span>
-            <select
-              value={selectedAttendee}
-              onChange={(event) => setSelectedAttendee(event.target.value)}
-            >
-              <option value="all">All</option>
-              {attendeeOptions.map((attendee) => (
-                <option key={attendee} value={attendee}>
-                  {attendee}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="todos-page__filter-field">
             <span>Meeting</span>
             <select
               value={selectedMeetingId}
@@ -258,9 +270,7 @@ export default function TodosPage() {
             <span>Status</span>
             <select
               value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as 'all' | 'open' | 'closed')
-              }
+              onChange={(event) => setStatusFilter(event.target.value as 'all' | 'open' | 'closed')}
             >
               <option value="all">All</option>
               <option value="open">Open</option>
@@ -305,11 +315,6 @@ export default function TodosPage() {
                   <article key={group.id} className="todos-page__card">
                     <div className="todos-page__card-header">
                       <div className="todos-page__meta-block">
-                        <span className="todos-page__meta-label">Attendee</span>
-                        <p className="todos-page__meta-value">{group.attendeeName}</p>
-                      </div>
-
-                      <div className="todos-page__meta-block">
                         <span className="todos-page__meta-label">Meeting</span>
                         <p className="todos-page__meta-value">{group.meetingTitle}</p>
                       </div>
@@ -333,10 +338,24 @@ export default function TodosPage() {
                                     void handleToggleTodo(group.meetingId, item.actionIndex);
                                   }}
                                 />
-                                <span
-                                  className={`todos-page__task-text${item.checked ? ' todos-page__task-text--checked' : ''}`}
-                                >
-                                  {item.task}
+                                <span className="todos-page__task-copy">
+                                  <span
+                                    className={`todos-page__task-text${item.checked ? ' todos-page__task-text--checked' : ''}`}
+                                  >
+                                    {item.task}
+                                  </span>
+                                  <span className="todos-page__task-meta">
+                                    {formatDeadline(item.deadline) ? (
+                                      <span className="todos-page__task-meta-item">
+                                        Deadline: {formatDeadline(item.deadline)}
+                                      </span>
+                                    ) : null}
+                                    <span
+                                      className={`todos-page__status-badge ${getStatusClass(item.status)}`}
+                                    >
+                                      {item.status}
+                                    </span>
+                                  </span>
                                 </span>
                               </label>
                             </li>
