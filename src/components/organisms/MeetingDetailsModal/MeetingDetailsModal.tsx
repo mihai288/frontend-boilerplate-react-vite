@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Meeting, MeetingActionItem, MeetingAttendeeInput } from '@services/meetings';
+import type {
+  ActionItemStatus,
+  Meeting,
+  MeetingActionItem,
+  MeetingAttendeeInput,
+} from '@services/meetings';
 import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
+import TodoStatusSelect from '@atoms/TodoStatusSelect/TodoStatusSelect';
 import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './MeetingDetailsModal.css';
 
@@ -79,18 +85,18 @@ export default function MeetingDetailsModal({
     }));
   };
 
-  const handleToggleActionItem = async (index: number) => {
+  const handleActionItemStatusChange = async (index: number, status: ActionItemStatus) => {
     const previousActionItems = draft.actionItems;
-    const toggledActionItems = previousActionItems.map((item, itemIndex) =>
-      itemIndex === index ? { ...item, checked: !item.checked } : item,
+    const updatedActionItems = previousActionItems.map((item, itemIndex) =>
+      itemIndex === index ? { ...item, status } : item,
     );
 
-    setDraft((current) => ({ ...current, actionItems: toggledActionItems }));
+    setDraft((current) => ({ ...current, actionItems: updatedActionItems }));
     setProcessError('');
     setIsSavingActionItems(true);
 
     try {
-      const persistedMeeting = await onUpdateActionItems(draft._id, toggledActionItems);
+      const persistedMeeting = await onUpdateActionItems(draft._id, updatedActionItems);
       setDraft({
         ...persistedMeeting,
         attendees: persistedMeeting.attendees ?? [],
@@ -99,9 +105,7 @@ export default function MeetingDetailsModal({
       });
     } catch (error) {
       setDraft((current) => ({ ...current, actionItems: previousActionItems }));
-      setProcessError(
-        error instanceof Error ? error.message : 'Unable to update action item completion.',
-      );
+      setProcessError(error instanceof Error ? error.message : 'Unable to update action item status.');
     } finally {
       setIsSavingActionItems(false);
     }
@@ -363,27 +367,25 @@ export default function MeetingDetailsModal({
                               key={`${item.task}-${item.assignee}-${index}`}
                               className="meeting-details-modal__todo-list-item"
                             >
-                              <label className="meeting-details-modal__todo-item">
-                                <input
-                                  type="checkbox"
-                                  className="meeting-details-modal__todo-checkbox"
-                                  checked={Boolean(item.checked)}
-                                  disabled={isSavingActionItems}
-                                  onChange={() => {
-                                    void handleToggleActionItem(index);
-                                  }}
-                                />
-                                <span className="meeting-details-modal__todo-content">
+                              <div className="meeting-details-modal__todo-item">
+                                <div className="meeting-details-modal__todo-content">
                                   <span
-                                    className={`meeting-details-modal__todo-text${item.checked ? ' meeting-details-modal__todo-text--checked' : ''}`}
+                                    className={`meeting-details-modal__todo-text${item.status === 'DONE' ? ' meeting-details-modal__todo-text--done' : ''}`}
                                   >
                                     {item.task}
                                   </span>
                                   <span className="meeting-details-modal__todo-assignee">
                                     Attendee: {item.assignee}
                                   </span>
-                                </span>
-                              </label>
+                                </div>
+                                <TodoStatusSelect
+                                  value={item.status}
+                                  disabled={isSavingActionItems}
+                                  onChange={(status) => {
+                                    void handleActionItemStatusChange(index, status);
+                                  }}
+                                />
+                              </div>
                             </li>
                           ))}
                         </ul>

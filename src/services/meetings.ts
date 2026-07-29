@@ -8,10 +8,12 @@ export interface MeetingAttendeeInput {
   role?: string;
 }
 
+export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
+
 export interface MeetingActionItem {
   task: string;
   assignee: string;
-  checked?: boolean;
+  status: ActionItemStatus;
 }
 
 export interface CreateMeetingPayload {
@@ -65,6 +67,17 @@ export interface MeetingRecord {
   updatedAt: string;
 }
 
+function normalizeActionItemStatus(item: {
+  status?: ActionItemStatus;
+  checked?: boolean;
+}): ActionItemStatus {
+  if (item.status === 'OPEN' || item.status === 'IN_PROGRESS' || item.status === 'DONE') {
+    return item.status;
+  }
+
+  return item.checked ? 'DONE' : 'OPEN';
+}
+
 function mapMeetingRecord(
   record: MeetingRecord,
   fallbackAttendees: MeetingAttendeeInput[] = [],
@@ -82,7 +95,7 @@ function mapMeetingRecord(
     actionItems: (record.actionItems ?? []).map((item) => ({
       task: item.task,
       assignee: item.assignee,
-      checked: Boolean(item.checked),
+      status: normalizeActionItemStatus(item),
     })),
     userId: record.userId,
     createdAt: record.createdAt,

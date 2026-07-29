@@ -213,38 +213,25 @@
   display: block;
 }
 
-.todos-page__task-toggle {
-  display: grid;
-  grid-template-columns: 20px 1fr;
-  align-items: start;
+.todos-page__task-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #f8fafc;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.todos-page__task-toggle:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-}
-
-.todos-page__task-toggle input {
-  margin: 3px 0 0;
-  accent-color: #2563eb;
 }
 
 .todos-page__task-text {
+  flex: 1;
   color: #0f172a;
   font-weight: 600;
   line-height: 1.5;
 }
 
-.todos-page__task-text--checked {
+.todos-page__task-text--done {
   color: #64748b;
   text-decoration: line-through;
 }

@@ -1,0 +1,44 @@
+.todo-status-select {
+  appearance: none;
+  box-sizing: border-box;
+  min-width: 108px;
+  padding: 5px 28px 5px 10px;
+  border: none;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23334155' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.todo-status-select:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.35);
+}
+
+.todo-status-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.todo-status-select--open {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.todo-status-select--in-progress {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.todo-status-select--done {
+  background-color: #d1fae5;
+  color: #047857;
+}

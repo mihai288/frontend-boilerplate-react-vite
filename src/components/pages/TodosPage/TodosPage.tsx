@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getMeetings, updateMeeting } from '@services/meetings';
+import { getMeetings, updateMeeting, type ActionItemStatus } from '@services/meetings';
+import TodoStatusSelect from '@atoms/TodoStatusSelect/TodoStatusSelect';
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './TodosPage.css';
 
@@ -12,7 +13,7 @@ interface TodoGroup {
   items: Array<{
     actionIndex: number;
     task: string;
-    checked: boolean;
+    status: ActionItemStatus;
   }>;
 }
 
@@ -30,7 +31,7 @@ export default function TodosPage() {
 
   const [selectedAttendee, setSelectedAttendee] = useState('all');
   const [selectedMeetingId, setSelectedMeetingId] = useState('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | ActionItemStatus>('all');
   const [savingTodoKey, setSavingTodoKey] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,7 +81,7 @@ export default function TodosPage() {
           existingGroup.items.push({
             actionIndex,
             task: item.task,
-            checked: Boolean(item.checked),
+            status: item.status,
           });
           return;
         }
@@ -95,7 +96,7 @@ export default function TodosPage() {
             {
               actionIndex,
               task: item.task,
-              checked: Boolean(item.checked),
+              status: item.status,
             },
           ],
         });
@@ -133,15 +134,11 @@ export default function TodosPage() {
     return todoGroups
       .map((group) => {
         const filteredItems = group.items.filter((item) => {
-          if (statusFilter === 'open') {
-            return !item.checked;
+          if (statusFilter === 'all') {
+            return true;
           }
 
-          if (statusFilter === 'closed') {
-            return item.checked;
-          }
-
-          return true;
+          return item.status === statusFilter;
         });
 
         return {
@@ -190,7 +187,11 @@ export default function TodosPage() {
     safeCurrentPage * PAGE_SIZE,
   );
 
-  const handleToggleTodo = async (meetingId: string, actionIndex: number) => {
+  const handleStatusChange = async (
+    meetingId: string,
+    actionIndex: number,
+    status: ActionItemStatus,
+  ) => {
     const meeting = meetings.find((entry) => entry._id === meetingId);
 
     if (!meeting) {
@@ -198,7 +199,7 @@ export default function TodosPage() {
     }
 
     const nextActionItems = meeting.actionItems.map((item, index) =>
-      index === actionIndex ? { ...item, checked: !item.checked } : item,
+      index === actionIndex ? { ...item, status } : item,
     );
     const todoKey = `${meetingId}:${actionIndex}`;
 
@@ -212,9 +213,7 @@ export default function TodosPage() {
         meetings.map((entry) => (entry._id === persistedMeeting._id ? persistedMeeting : entry)),
       );
     } catch (error) {
-      setSaveError(
-        error instanceof Error ? error.message : 'Unable to update todo completion status.',
-      );
+      setSaveError(error instanceof Error ? error.message : 'Unable to update todo status.');
     } finally {
       setSavingTodoKey(null);
     }
@@ -259,12 +258,13 @@ export default function TodosPage() {
             <select
               value={statusFilter}
               onChange={(event) =>
-                setStatusFilter(event.target.value as 'all' | 'open' | 'closed')
+                setStatusFilter(event.target.value as 'all' | ActionItemStatus)
               }
             >
               <option value="all">All</option>
-              <option value="open">Open</option>
-              <option value="closed">Closed</option>
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In progress</option>
+              <option value="DONE">Done</option>
             </select>
           </label>
         </aside>
@@ -324,21 +324,20 @@ export default function TodosPage() {
 
                           return (
                             <li key={todoKey} className="todos-page__task-item">
-                              <label className="todos-page__task-toggle">
-                                <input
-                                  type="checkbox"
-                                  checked={item.checked}
-                                  disabled={savingTodoKey === todoKey}
-                                  onChange={() => {
-                                    void handleToggleTodo(group.meetingId, item.actionIndex);
-                                  }}
-                                />
+                              <div className="todos-page__task-row">
                                 <span
-                                  className={`todos-page__task-text${item.checked ? ' todos-page__task-text--checked' : ''}`}
+                                  className={`todos-page__task-text${item.status === 'DONE' ? ' todos-page__task-text--done' : ''}`}
                                 >
                                   {item.task}
                                 </span>
-                              </label>
+                                <TodoStatusSelect
+                                  value={item.status}
+                                  disabled={savingTodoKey === todoKey}
+                                  onChange={(status) => {
+                                    void handleStatusChange(group.meetingId, item.actionIndex, status);
+                                  }}
+                                />
+                              </div>
                             </li>
                           );
                         })}
