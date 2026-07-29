@@ -450,10 +450,80 @@
   gap: 10px;
 }
 
-.meeting-details-modal__attendee-editor-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+.meeting-details-modal__attendee-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+.meeting-details-modal__attendee-editor-list--scrollable {
+  max-height: 280px;
+}
+
+.meeting-details-modal__attendee-editor-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.meeting-details-modal__attendee-editor-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.meeting-details-modal__attendee-editor-list::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 999px;
+}
+
+.meeting-details-modal__attendee-editor-list::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.meeting-details-modal__attendee-remove-confirm {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 12px;
+  background: rgba(254, 242, 242, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
+}
+
+.meeting-details-modal__attendee-remove-confirm-text {
+  margin: 0;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.meeting-details-modal__attendee-remove-confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meeting-details-modal__attendee-add {
+  width: fit-content;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #16a34a;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.meeting-details-modal__attendee-add:hover {
+  background: #15803d;
+}
+
+.meeting-details-modal__attendee-add:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #94a3b8;
 }
 
 .meeting-details-modal__footer {
@@ -564,7 +634,17 @@
     grid-template-columns: 1fr;
   }
 
-  .meeting-details-modal__attendee-editor-row {
-    grid-template-columns: 1fr;
+  .meeting-details-modal__attendee-remove-confirm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .meeting-details-modal__attendee-remove-confirm-actions,
+  .meeting-details-modal__attendee-add {
+    width: 100%;
+  }
+
+  .meeting-details-modal__attendee-editor-list--scrollable {
+    max-height: 240px;
   }
 }

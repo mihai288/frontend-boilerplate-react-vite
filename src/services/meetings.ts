@@ -8,7 +8,7 @@ export interface MeetingAttendeeInput {
   role?: string;
 }
 
-export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
+export type ActionItemStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'UNKNOWN';
 
 export interface MeetingActionItem {
   task: string;
@@ -71,7 +71,12 @@ function normalizeActionItemStatus(item: {
   status?: ActionItemStatus;
   checked?: boolean;
 }): ActionItemStatus {
-  if (item.status === 'OPEN' || item.status === 'IN_PROGRESS' || item.status === 'DONE') {
+  if (
+    item.status === 'OPEN' ||
+    item.status === 'IN_PROGRESS' ||
+    item.status === 'DONE' ||
+    item.status === 'UNKNOWN'
+  ) {
     return item.status;
   }
 

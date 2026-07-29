@@ -34,6 +34,7 @@ export default function TodosPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | ActionItemStatus>('all');
   const [savingTodoKey, setSavingTodoKey] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
+  const [pendingDeleteTodoKey, setPendingDeleteTodoKey] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
@@ -219,6 +220,33 @@ export default function TodosPage() {
     }
   };
 
+  const handleDeleteTodo = async (meetingId: string, actionIndex: number) => {
+    const meeting = meetings.find((entry) => entry._id === meetingId);
+
+    if (!meeting) {
+      return;
+    }
+
+    const nextActionItems = meeting.actionItems.filter((_, index) => index !== actionIndex);
+    const todoKey = `${meetingId}:${actionIndex}`;
+
+    setSaveError('');
+    setSavingTodoKey(todoKey);
+
+    try {
+      const persistedMeeting = await updateMeeting(meetingId, { actionItems: nextActionItems });
+
+      setMeetings(
+        meetings.map((entry) => (entry._id === persistedMeeting._id ? persistedMeeting : entry)),
+      );
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to delete todo.');
+    } finally {
+      setSavingTodoKey(null);
+      setPendingDeleteTodoKey(null);
+    }
+  };
+
   return (
     <section className="todos-page" aria-live="polite">
       <div className="todos-page__content">
@@ -263,6 +291,7 @@ export default function TodosPage() {
               <option value="OPEN">Open</option>
               <option value="IN_PROGRESS">In progress</option>
               <option value="DONE">Done</option>
+              <option value="UNKNOWN">Unknown</option>
             </select>
           </label>
         </aside>
@@ -328,17 +357,58 @@ export default function TodosPage() {
                                 >
                                   {item.task}
                                 </span>
-                                <TodoStatusSelect
-                                  value={item.status}
-                                  disabled={savingTodoKey === todoKey}
-                                  onChange={(status) => {
-                                    void handleStatusChange(
-                                      group.meetingId,
-                                      item.actionIndex,
-                                      status,
-                                    );
-                                  }}
-                                />
+                                <div className="todos-page__task-actions">
+                                  <TodoStatusSelect
+                                    value={item.status}
+                                    disabled={savingTodoKey === todoKey}
+                                    onChange={(status) => {
+                                      void handleStatusChange(
+                                        group.meetingId,
+                                        item.actionIndex,
+                                        status,
+                                      );
+                                    }}
+                                  />
+                                  {pendingDeleteTodoKey === todoKey ? (
+                                    <div className="todos-page__delete-confirm">
+                                      <span className="todos-page__delete-confirm-text">
+                                        Delete?
+                                      </span>
+                                      <div className="todos-page__delete-confirm-actions">
+                                        <button
+                                          type="button"
+                                          className="todos-page__delete-cancel"
+                                          disabled={savingTodoKey === todoKey}
+                                          onClick={() => setPendingDeleteTodoKey(null)}
+                                        >
+                                          Cancel
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="todos-page__delete-button"
+                                          disabled={savingTodoKey === todoKey}
+                                          onClick={() => {
+                                            void handleDeleteTodo(
+                                              group.meetingId,
+                                              item.actionIndex,
+                                            );
+                                          }}
+                                        >
+                                          Confirm
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="todos-page__delete-button"
+                                      disabled={savingTodoKey === todoKey}
+                                      onClick={() => setPendingDeleteTodoKey(todoKey)}
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </li>
                           );

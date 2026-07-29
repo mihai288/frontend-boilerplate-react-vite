@@ -236,6 +236,70 @@
   text-decoration: line-through;
 }
 
+.todos-page__task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.todos-page__delete-button {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #dc2626;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.todos-page__delete-button:hover {
+  background: #b91c1c;
+}
+
+.todos-page__delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.todos-page__delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.todos-page__delete-confirm-text {
+  color: #991b1b;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.todos-page__delete-confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.todos-page__delete-cancel {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.todos-page__delete-cancel:hover {
+  background: #f8fafc;
+}
+
+.todos-page__delete-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .todos-page__pagination {
   display: flex;
   align-items: center;
@@ -356,6 +420,27 @@
   }
 
   .todos-page__task-row .todo-status-select {
+    width: 100%;
+  }
+
+  .todos-page__task-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .todos-page__delete-confirm,
+  .todos-page__delete-confirm-actions,
+  .todos-page__delete-cancel {
+    width: 100%;
+  }
+
+  .todos-page__delete-confirm-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .todos-page__delete-button {
     width: 100%;
   }
 

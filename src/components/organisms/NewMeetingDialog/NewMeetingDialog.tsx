@@ -18,9 +18,7 @@ export default function NewMeetingDialog() {
   const [pendingRemoveIndex, setPendingRemoveIndex] = useState<number | null>(null);
   const [newAttendeeIndex, setNewAttendeeIndex] = useState<number | null>(null);
   const [stepOneHeight, setStepOneHeight] = useState<number | null>(null);
-  const [attendeeListHeight, setAttendeeListHeight] = useState<number | null>(null);
   const stepOneSectionRef = useRef<HTMLElement | null>(null);
-  const attendeeListRef = useRef<HTMLDivElement | null>(null);
 
   const addMeeting = useMeetingStore((state) => state.addMeeting);
   const isDialogOpen = useMeetingStore((state) => state.isDialogOpen);
@@ -31,16 +29,6 @@ export default function NewMeetingDialog() {
       setStepOneHeight(Math.ceil(stepOneSectionRef.current.getBoundingClientRect().height));
     }
   }, [step, title, meetingDateTime, description]);
-
-  useLayoutEffect(() => {
-    if (step !== 3 || !attendeeListRef.current) {
-      return;
-    }
-
-    const maxListHeight = window.innerWidth <= 900 ? 240 : 280;
-    const contentHeight = attendeeListRef.current.scrollHeight;
-    setAttendeeListHeight(Math.min(contentHeight, maxListHeight));
-  }, [step, attendees.length]);
 
   useEffect(() => {
     if (newAttendeeIndex === null) {
@@ -116,7 +104,6 @@ export default function NewMeetingDialog() {
     setPendingRemoveIndex(null);
     setNewAttendeeIndex(null);
     setStepOneHeight(null);
-    setAttendeeListHeight(null);
     setErrorMessage('');
   };
 
@@ -381,23 +368,21 @@ export default function NewMeetingDialog() {
                 <p>Add the people who should be associated with this meeting.</p>
               </div>
 
-              <div
-                ref={attendeeListRef}
-                className="attendee-list"
-                style={attendeeListHeight ? { height: `${attendeeListHeight}px` } : undefined}
-              >
-                {attendees.map((attendee, index) => (
-                  <AttendeeRow
-                    key={index}
-                    index={index}
-                    attendee={attendee}
-                    canRemove={attendees.length > 1}
-                    isNew={index === newAttendeeIndex}
-                    onChange={updateAttendee}
-                    onRemove={requestRemoveAttendee}
-                  />
-                ))}
-              </div>
+              {attendees.length > 0 ? (
+                <div className="attendee-list attendee-list--scrollable">
+                  {attendees.map((attendee, index) => (
+                    <AttendeeRow
+                      key={index}
+                      index={index}
+                      attendee={attendee}
+                      canRemove={attendees.length > 1}
+                      isNew={index === newAttendeeIndex}
+                      onChange={updateAttendee}
+                      onRemove={requestRemoveAttendee}
+                    />
+                  ))}
+                </div>
+              ) : null}
 
               {pendingRemoveIndex !== null ? (
                 <div className="attendee-remove-confirm" role="status" aria-live="polite">

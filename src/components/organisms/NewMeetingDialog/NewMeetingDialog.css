@@ -242,6 +242,10 @@
   padding-right: 4px;
 }
 
+.attendee-list--scrollable {
+  max-height: 280px;
+}
+
 .attendee-remove-confirm {
   min-height: 44px;
   padding: 10px 12px;
@@ -395,6 +399,10 @@
 
   .step-line {
     width: 24px;
+  }
+
+  .attendee-list--scrollable {
+    max-height: 240px;
   }
 }
 

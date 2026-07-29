@@ -7,6 +7,7 @@ import type {
 } from '@services/meetings';
 import MeetingStatusBadge from '@atoms/MeetingStatusBadge/MeetingStatusBadge';
 import TodoStatusSelect from '@atoms/TodoStatusSelect/TodoStatusSelect';
+import AttendeeRow from '@molecules/AttendeeRow/AttendeeRow';
 import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './MeetingDetailsModal.css';
 
@@ -45,6 +46,8 @@ export default function MeetingDetailsModal({
   const [activeTab, setActiveTab] = useState<DetailsTab>('description');
   const [saveError, setSaveError] = useState('');
   const [processError, setProcessError] = useState('');
+  const [pendingRemoveAttendeeIndex, setPendingRemoveAttendeeIndex] = useState<number | null>(null);
+  const [newAttendeeIndex, setNewAttendeeIndex] = useState<number | null>(null);
   const previousMeetingIdRef = useRef(meeting._id);
   const [draft, setDraft] = useState<Meeting>({
     ...meeting,
@@ -69,8 +72,24 @@ export default function MeetingDetailsModal({
     }
     setSaveError('');
     setProcessError('');
+    setPendingRemoveAttendeeIndex(null);
+    setNewAttendeeIndex(null);
     previousMeetingIdRef.current = meeting._id;
   }, [meeting]);
+
+  useEffect(() => {
+    if (newAttendeeIndex === null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setNewAttendeeIndex(null);
+    }, 320);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [newAttendeeIndex]);
 
   const updateDraft = <K extends keyof Meeting>(field: K, value: Meeting[K]) => {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -83,6 +102,50 @@ export default function MeetingDetailsModal({
         attendeeIndex === index ? { ...attendee, [field]: value } : attendee,
       ),
     }));
+  };
+
+  const addDraftAttendee = () => {
+    setDraft((current) => {
+      const nextIndex = current.attendees.length;
+      const nextAttendees = [...current.attendees, { name: '', email: '', role: '' }];
+
+      setNewAttendeeIndex(nextIndex);
+
+      requestAnimationFrame(() => {
+        const nextNameInput = document.getElementById(
+          `attendee-name-${nextIndex}`,
+        ) as HTMLInputElement | null;
+        nextNameInput?.focus();
+        nextNameInput?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      });
+
+      return {
+        ...current,
+        attendees: nextAttendees,
+      };
+    });
+  };
+
+  const requestRemoveDraftAttendee = (index: number) => {
+    setPendingRemoveAttendeeIndex(index);
+  };
+
+  const confirmRemoveDraftAttendee = () => {
+    if (pendingRemoveAttendeeIndex === null) {
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      attendees: current.attendees.filter(
+        (_, attendeeIndex) => attendeeIndex !== pendingRemoveAttendeeIndex,
+      ),
+    }));
+    setPendingRemoveAttendeeIndex(null);
+  };
+
+  const cancelRemoveDraftAttendee = () => {
+    setPendingRemoveAttendeeIndex(null);
   };
 
   const handleActionItemStatusChange = async (index: number, status: ActionItemStatus) => {
@@ -105,7 +168,9 @@ export default function MeetingDetailsModal({
       });
     } catch (error) {
       setDraft((current) => ({ ...current, actionItems: previousActionItems }));
-      setProcessError(error instanceof Error ? error.message : 'Unable to update action item status.');
+      setProcessError(
+        error instanceof Error ? error.message : 'Unable to update action item status.',
+      );
     } finally {
       setIsSavingActionItems(false);
     }
@@ -117,6 +182,14 @@ export default function MeetingDetailsModal({
       return;
     }
 
+    const normalizedAttendees = draft.attendees
+      .map((attendee) => ({
+        name: attendee.name.trim(),
+        email: attendee.email?.trim() ?? '',
+        role: attendee.role?.trim() ?? '',
+      }))
+      .filter((attendee) => attendee.name.length > 0);
+
     setSaveError('');
     setIsSaving(true);
 
@@ -126,6 +199,7 @@ export default function MeetingDetailsModal({
         title: draft.title.trim(),
         description: draft.description?.trim() ?? '',
         transcript: draft.transcript?.trim() ?? '',
+        attendees: normalizedAttendees,
       });
       setIsEditing(false);
     } catch (error) {
@@ -177,6 +251,9 @@ export default function MeetingDetailsModal({
         .filter((name) => name !== 'Unassigned' && name !== ''),
     ),
   ).filter((name) => !manualAttendeeNames.has(name.toLowerCase()));
+
+  const canAddAttendee =
+    draft.attendees.length === 0 || draft.attendees[draft.attendees.length - 1]?.name.trim() !== '';
 
   return (
     <div className="meeting-details-modal-overlay" role="presentation" onClick={onClose}>
@@ -442,28 +519,62 @@ export default function MeetingDetailsModal({
             <div className="meeting-details-modal__field meeting-details-modal__field--wide">
               <span>Attendees</span>
               <div className="meeting-details-modal__attendee-editor">
-                {draft.attendees.map((attendee, index) => (
-                  <div
-                    key={`${attendee.name}-${index}`}
-                    className="meeting-details-modal__attendee-editor-row"
-                  >
-                    <input
-                      value={attendee.name}
-                      placeholder="Name"
-                      onChange={(event) => updateAttendee(index, 'name', event.target.value)}
-                    />
-                    <input
-                      value={attendee.email ?? ''}
-                      placeholder="Email"
-                      onChange={(event) => updateAttendee(index, 'email', event.target.value)}
-                    />
-                    <input
-                      value={attendee.role ?? ''}
-                      placeholder="Role"
-                      onChange={(event) => updateAttendee(index, 'role', event.target.value)}
-                    />
+                {draft.attendees.length > 0 ? (
+                  <div className="meeting-details-modal__attendee-editor-list meeting-details-modal__attendee-editor-list--scrollable">
+                    {draft.attendees.map((attendee, index) => (
+                      <AttendeeRow
+                        key={index}
+                        index={index}
+                        attendee={{
+                          name: attendee.name,
+                          email: attendee.email ?? '',
+                          role: attendee.role ?? '',
+                        }}
+                        canRemove={draft.attendees.length > 0}
+                        isNew={index === newAttendeeIndex}
+                        onChange={updateAttendee}
+                        onRemove={requestRemoveDraftAttendee}
+                      />
+                    ))}
                   </div>
-                ))}
+                ) : null}
+
+                {pendingRemoveAttendeeIndex !== null ? (
+                  <div
+                    className="meeting-details-modal__attendee-remove-confirm"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <p className="meeting-details-modal__attendee-remove-confirm-text">
+                      Remove attendee #{pendingRemoveAttendeeIndex + 1}?
+                    </p>
+                    <div className="meeting-details-modal__attendee-remove-confirm-actions">
+                      <button
+                        type="button"
+                        className="meeting-details-modal__button meeting-details-modal__button--ghost"
+                        onClick={cancelRemoveDraftAttendee}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="meeting-details-modal__button meeting-details-modal__button--danger"
+                        onClick={confirmRemoveDraftAttendee}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
+                <button
+                  type="button"
+                  className="meeting-details-modal__attendee-add"
+                  onClick={addDraftAttendee}
+                  disabled={!canAddAttendee}
+                >
+                  + Add attendee
+                </button>
               </div>
             </div>
 

@@ -11,9 +11,14 @@ const statusOptions: Array<{ value: ActionItemStatus; label: string }> = [
   { value: 'OPEN', label: 'Open' },
   { value: 'IN_PROGRESS', label: 'In progress' },
   { value: 'DONE', label: 'Done' },
+  { value: 'UNKNOWN', label: 'Unknown' },
 ];
 
-export default function TodoStatusSelect({ value, onChange, disabled = false }: TodoStatusSelectProps) {
+export default function TodoStatusSelect({
+  value,
+  onChange,
+  disabled = false,
+}: TodoStatusSelectProps) {
   return (
     <select
       className={`todo-status-select todo-status-select--${value.toLowerCase().replace('_', '-')}`}

@@ -43,6 +43,11 @@
   color: #047857;
 }
 
+.todo-status-select--unknown {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
 @media (max-width: 640px) {
   .todo-status-select {
     min-width: 0;

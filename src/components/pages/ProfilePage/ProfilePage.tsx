@@ -1,8 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useMeetingStore } from '@/store/useMeetingStore';
 import MeetingDetailsModal from '@organisms/MeetingDetailsModal/MeetingDetailsModal';
-import { deleteMeeting, processMeeting, type Meeting, updateMeeting } from '@services/meetings';
+import {
+  deleteMeeting,
+  getMeetings,
+  processMeeting,
+  type Meeting,
+  updateMeeting,
+} from '@services/meetings';
 import { formatMeetingDate } from '@/utils/formatMeetingDate';
 import './ProfilePage.css';
 
@@ -14,10 +20,43 @@ export default function ProfilePage() {
 
   const setMeetings = useMeetingStore((state) => state.setMeetings);
   const removeMeeting = useMeetingStore((state) => state.removeMeeting);
+  const setLoading = useMeetingStore((state) => state.setLoading);
+  const setErrorMessage = useMeetingStore((state) => state.setErrorMessage);
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState(user?.name || '');
   const [draftEmail, setDraftEmail] = useState(user?.email || '');
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMeetings() {
+      setLoading(true);
+      setErrorMessage('');
+
+      try {
+        const data = await getMeetings();
+
+        if (isMounted) {
+          setMeetings(data);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setErrorMessage(error instanceof Error ? error.message : 'Unable to load meetings');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadMeetings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setErrorMessage, setLoading, setMeetings]);
 
   const initials = useMemo(() => {
     const name = isEditing ? draftName : user?.name;
