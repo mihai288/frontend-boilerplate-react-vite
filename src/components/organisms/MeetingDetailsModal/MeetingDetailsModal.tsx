@@ -13,6 +13,7 @@ import './MeetingDetailsModal.css';
 
 interface MeetingDetailsModalProps {
   meeting: Meeting;
+  initialTab?: DetailsTab;
   onClose: () => void;
   onSave: (updatedMeeting: Meeting) => Promise<void> | void;
   onDelete: (meetingId: string) => Promise<void>;
@@ -24,6 +25,7 @@ type DetailsTab = 'description' | 'attendees' | 'transcript' | 'ai-results';
 
 export default function MeetingDetailsModal({
   meeting,
+  initialTab = 'description',
   onClose,
   onSave,
   onDelete,
@@ -43,7 +45,7 @@ export default function MeetingDetailsModal({
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSavingActionItems, setIsSavingActionItems] = useState(false);
-  const [activeTab, setActiveTab] = useState<DetailsTab>('description');
+  const [activeTab, setActiveTab] = useState<DetailsTab>(initialTab);
   const [saveError, setSaveError] = useState('');
   const [processError, setProcessError] = useState('');
   const [pendingRemoveAttendeeIndex, setPendingRemoveAttendeeIndex] = useState<number | null>(null);
@@ -68,14 +70,14 @@ export default function MeetingDetailsModal({
     setIsEditing(false);
     setIsConfirmingDelete(false);
     if (isDifferentMeeting) {
-      setActiveTab('description');
+      setActiveTab(initialTab);
     }
     setSaveError('');
     setProcessError('');
     setPendingRemoveAttendeeIndex(null);
     setNewAttendeeIndex(null);
     previousMeetingIdRef.current = meeting._id;
-  }, [meeting]);
+  }, [initialTab, meeting]);
 
   useEffect(() => {
     if (newAttendeeIndex === null) {
