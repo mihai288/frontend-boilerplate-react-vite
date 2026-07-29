@@ -5,14 +5,24 @@ import './MeetingsPanel.css';
 interface MeetingsPanelProps {
   meetings: Meeting[];
   onOpenMeeting: (meeting: Meeting) => void;
+  onOpenMeetingAttendees: (meeting: Meeting) => void;
 }
 
-export default function MeetingsPanel({ meetings, onOpenMeeting }: MeetingsPanelProps) {
+export default function MeetingsPanel({
+  meetings,
+  onOpenMeeting,
+  onOpenMeetingAttendees,
+}: MeetingsPanelProps) {
   return (
     <section className="meetings-panel" aria-label="Meetings list">
       <div className="meetings-panel__list">
         {meetings.map((meeting) => (
-          <MeetingCard key={meeting._id} meeting={meeting} onOpen={() => onOpenMeeting(meeting)} />
+          <MeetingCard
+            key={meeting._id}
+            meeting={meeting}
+            onOpen={() => onOpenMeeting(meeting)}
+            onOpenAttendees={() => onOpenMeetingAttendees(meeting)}
+          />
         ))}
       </div>
     </section>

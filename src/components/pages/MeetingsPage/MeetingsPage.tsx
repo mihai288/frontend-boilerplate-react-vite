@@ -14,6 +14,8 @@ import {
 import { useMeetingStore } from '../../../store/useMeetingStore';
 import './MeetingsPage.css';
 
+type MeetingDetailsTab = 'description' | 'attendees' | 'transcript' | 'ai-results';
+
 export default function MeetingsPage() {
   const meetings = useMeetingStore((state) => state.meetings);
   const isLoading = useMeetingStore((state) => state.isLoading);
@@ -29,6 +31,7 @@ export default function MeetingsPage() {
   const [dateFilter, setDateFilter] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'created'>('date');
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
+  const [selectedMeetingTab, setSelectedMeetingTab] = useState<MeetingDetailsTab>('description');
   const [currentPage, setCurrentPage] = useState(1);
   const processingPollRef = useRef<number | null>(null);
   const PAGE_SIZE = 10;
@@ -208,7 +211,14 @@ export default function MeetingsPage() {
             {filteredMeetings.length > 0 ? (
               <MeetingsPanel
                 meetings={paginatedMeetings}
-                onOpenMeeting={(meeting) => setSelectedMeeting(meeting)}
+                onOpenMeeting={(meeting) => {
+                  setSelectedMeeting(meeting);
+                  setSelectedMeetingTab('description');
+                }}
+                onOpenMeetingAttendees={(meeting) => {
+                  setSelectedMeeting(meeting);
+                  setSelectedMeetingTab('attendees');
+                }}
               />
             ) : null}
           </div>
@@ -254,7 +264,11 @@ export default function MeetingsPage() {
       {selectedMeeting ? (
         <MeetingDetailsModal
           meeting={selectedMeeting}
-          onClose={() => setSelectedMeeting(null)}
+          initialTab={selectedMeetingTab}
+          onClose={() => {
+            setSelectedMeeting(null);
+            setSelectedMeetingTab('description');
+          }}
           onSave={async (updatedMeeting) => {
             const persistedMeeting = await updateMeeting(updatedMeeting._id, {
               title: updatedMeeting.title,
