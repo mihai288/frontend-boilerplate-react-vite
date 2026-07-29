@@ -224,7 +224,7 @@ export default function TodosPage() {
       <div className="todos-page__content">
         <aside className="todos-page__sidebar" aria-label="Todo filters">
           <label className="todos-page__filter-field">
-            <span>Attendee</span>
+            <span>Assignee</span>
             <select
               value={selectedAttendee}
               onChange={(event) => setSelectedAttendee(event.target.value)}
@@ -257,9 +257,7 @@ export default function TodosPage() {
             <span>Status</span>
             <select
               value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as 'all' | ActionItemStatus)
-              }
+              onChange={(event) => setStatusFilter(event.target.value as 'all' | ActionItemStatus)}
             >
               <option value="all">All</option>
               <option value="OPEN">Open</option>
@@ -305,7 +303,7 @@ export default function TodosPage() {
                   <article key={group.id} className="todos-page__card">
                     <div className="todos-page__card-header">
                       <div className="todos-page__meta-block">
-                        <span className="todos-page__meta-label">Attendee</span>
+                        <span className="todos-page__meta-label">Assignee</span>
                         <p className="todos-page__meta-value">{group.attendeeName}</p>
                       </div>
 
@@ -334,7 +332,11 @@ export default function TodosPage() {
                                   value={item.status}
                                   disabled={savingTodoKey === todoKey}
                                   onChange={(status) => {
-                                    void handleStatusChange(group.meetingId, item.actionIndex, status);
+                                    void handleStatusChange(
+                                      group.meetingId,
+                                      item.actionIndex,
+                                      status,
+                                    );
                                   }}
                                 />
                               </div>

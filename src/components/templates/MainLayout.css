@@ -1,5 +1,5 @@
 html {
-  overflow: hidden;
+  overflow-x: hidden;
   height: 100%;
   scrollbar-width: none;
 }
@@ -13,8 +13,7 @@ html::-webkit-scrollbar {
 .layout-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(29, 78, 216, 0.12), transparent 34%),
@@ -247,6 +246,7 @@ html::-webkit-scrollbar {
     grid-template-columns: 1fr;
     justify-items: center;
     top: 8px;
+    width: calc(100% - 16px);
     padding: 12px 16px;
   }
 
@@ -263,19 +263,53 @@ html::-webkit-scrollbar {
     width: 100%;
     justify-content: center;
   }
+
+  .layout-content {
+    padding: 136px 18px 24px;
+  }
 }
 
 @media (max-width: 640px) {
   .layout-header {
     padding: 12px;
+    border-radius: 14px;
+    gap: 10px;
   }
 
   .layout-content {
-    padding: 116px 14px 22px;
+    padding: 144px 12px 18px;
   }
 
   .brand-group {
     width: 100%;
     justify-content: center;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .layout-nav {
+    gap: 6px;
+  }
+
+  .nav-tab {
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .profile-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .profile-menu {
+    right: 50%;
+    transform: translateX(50%);
+    width: min(300px, calc(100vw - 24px));
+    min-width: 0;
   }
 }

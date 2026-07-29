@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 16px;
   z-index: 1200;
   backdrop-filter: blur(12px);
 }
@@ -16,7 +16,7 @@
 .meeting-details-modal {
   position: relative;
   width: min(760px, 100%);
-  max-height: min(88vh, 860px);
+  max-height: min(88dvh, 860px);
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -499,6 +499,67 @@
 }
 
 @media (max-width: 720px) {
+  .meeting-details-modal-overlay {
+    align-items: flex-end;
+    padding: 8px;
+  }
+
+  .meeting-details-modal {
+    max-height: calc(100dvh - 8px);
+    border-radius: 18px 18px 0 0;
+    padding: 14px;
+  }
+
+  .meeting-details-modal__header {
+    padding-right: 34px;
+  }
+
+  .meeting-details-modal__toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .meeting-details-modal__button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .meeting-details-modal__tabs {
+    gap: 6px;
+  }
+
+  .meeting-details-modal__tab {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    text-align: center;
+  }
+
+  .meeting-details-modal__todo-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .meeting-details-modal__todo-item .todo-status-select {
+    width: 100%;
+  }
+
+  .meeting-details-modal__footer {
+    align-items: stretch;
+  }
+
+  .meeting-details-modal__footer-end,
+  .meeting-details-modal__delete-confirm,
+  .meeting-details-modal__delete-confirm-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .meeting-details-modal__delete-confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
   .meeting-details-modal__meta {
     grid-template-columns: 1fr;
   }

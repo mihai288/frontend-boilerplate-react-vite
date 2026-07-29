@@ -42,3 +42,10 @@
   background-color: #d1fae5;
   color: #047857;
 }
+
+@media (max-width: 640px) {
+  .todo-status-select {
+    min-width: 0;
+    width: 100%;
+  }
+}

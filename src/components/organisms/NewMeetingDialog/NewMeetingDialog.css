@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background:
     radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 30%),
     radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.2), transparent 28%),
@@ -19,7 +19,7 @@
 .dialog-box {
   position: relative;
   width: min(980px, 100%);
-  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow-y: auto;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 28px;
@@ -394,5 +394,59 @@
 
   .step-line {
     width: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dialog-overlay {
+    align-items: flex-end;
+    padding: 8px;
+  }
+
+  .dialog-box {
+    border-radius: 18px 18px 0 0;
+    max-height: calc(100dvh - 8px);
+    padding: 16px;
+  }
+
+  .dialog-header {
+    margin-bottom: 16px;
+    padding-right: 34px;
+  }
+
+  .dialog-title {
+    font-size: 1.35rem;
+  }
+
+  .dialog-subtitle {
+    max-width: none;
+  }
+
+  .meeting-form {
+    gap: 16px;
+  }
+
+  .attendee-remove-confirm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .attendee-remove-confirm__actions {
+    width: 100%;
+  }
+
+  .attendee-remove-confirm__remove,
+  .secondary-button,
+  .submit-button {
+    width: 100%;
+  }
+
+  .add-attendee-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .dialog-buttons {
+    gap: 10px;
   }
 }

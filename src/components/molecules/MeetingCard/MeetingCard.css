@@ -89,3 +89,27 @@
     align-self: center;
   }
 }
+
+@media (max-width: 640px) {
+  .meeting-card {
+    border-radius: 14px;
+  }
+
+  .meeting-card__summary {
+    flex-direction: column;
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .meeting-card__title {
+    white-space: normal;
+  }
+
+  .meeting-card__subtitle {
+    white-space: normal;
+  }
+
+  .meeting-card__meta {
+    align-self: flex-start;
+  }
+}

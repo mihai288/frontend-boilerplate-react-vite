@@ -239,3 +239,48 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .profile-page {
+    gap: 12px;
+  }
+
+  .profile-page__hero-card,
+  .profile-page__panel,
+  .profile-page__stat-card {
+    border-radius: 14px;
+  }
+
+  .profile-page__hero-card,
+  .profile-page__panel,
+  .profile-page__stat-card {
+    padding: 14px;
+  }
+
+  .profile-page__panel-header {
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .profile-page__detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .profile-page__detail-value,
+  .profile-page__edit-input {
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .profile-page__edit-actions {
+    width: 100%;
+  }
+
+  .profile-page__action-button {
+    width: 100%;
+    text-align: center;
+  }
+}

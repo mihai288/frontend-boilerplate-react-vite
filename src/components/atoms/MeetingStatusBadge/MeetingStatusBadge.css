@@ -30,3 +30,10 @@
   background: #fee2e2;
   color: #b91c1c;
 }
+
+@media (max-width: 640px) {
+  .meeting-status-badge {
+    min-width: 0;
+    font-size: 11px;
+  }
+}
