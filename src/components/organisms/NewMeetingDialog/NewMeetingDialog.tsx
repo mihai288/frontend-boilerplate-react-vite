@@ -12,7 +12,7 @@ export default function NewMeetingDialog() {
   const [transcriptMode, setTranscriptMode] = useState<'text' | 'file'>('text');
   const [transcript, setTranscript] = useState('');
   const [transcriptFileName, setTranscriptFileName] = useState('');
-  const [attendees, setAttendees] = useState<AttendeeDraft[]>([{ name: '', email: '', role: '' }]);
+  const [attendees, setAttendees] = useState<AttendeeDraft[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [pendingRemoveIndex, setPendingRemoveIndex] = useState<number | null>(null);
@@ -112,7 +112,7 @@ export default function NewMeetingDialog() {
     setTranscriptMode('text');
     setTranscript('');
     setTranscriptFileName('');
-    setAttendees([{ name: '', email: '', role: '' }]);
+    setAttendees([]);
     setPendingRemoveIndex(null);
     setNewAttendeeIndex(null);
     setStepOneHeight(null);
@@ -170,9 +170,7 @@ export default function NewMeetingDialog() {
     }
   };
 
-  const handleSubmit = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-
+  const submitMeeting = async () => {
     const normalizedTitle = title.trim();
     const normalizedDescription = description.trim();
     const normalizedTranscript = transcript.trim();
@@ -192,11 +190,6 @@ export default function NewMeetingDialog() {
 
     if (!normalizedDate || Number.isNaN(normalizedDate.getTime())) {
       setErrorMessage('Date and time are required.');
-      return;
-    }
-
-    if (validAttendees.length === 0) {
-      setErrorMessage('Add at least one attendee with a name.');
       return;
     }
 
@@ -227,7 +220,8 @@ export default function NewMeetingDialog() {
     }
   };
 
-  const canAddAttendee = attendees[attendees.length - 1]?.name.trim() !== '';
+  const canAddAttendee =
+    attendees.length === 0 || attendees[attendees.length - 1]?.name.trim() !== '';
 
   return (
     <div className="dialog-overlay" role="presentation">
@@ -256,7 +250,16 @@ export default function NewMeetingDialog() {
           </div>
         </div>
 
-        <form className="meeting-form" onSubmit={handleSubmit}>
+        <form
+          className="meeting-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+
+            if (step < 3) {
+              goToNextStep();
+            }
+          }}
+        >
           <div className="stepper" aria-label="Meeting setup progress">
             <div className={`step-dot ${step >= 1 ? 'active' : ''}`}>
               <span>1</span>
@@ -420,13 +423,12 @@ export default function NewMeetingDialog() {
                 </div>
               ) : null}
 
-              <div className="add-attendee-action" aria-hidden={!canAddAttendee}>
+              <div className="add-attendee-action">
                 <button
                   type="button"
-                  className={`add-attendee-button ${!canAddAttendee ? 'add-attendee-button--hidden' : ''}`}
+                  className="add-attendee-button"
                   onClick={addAttendee}
                   disabled={!canAddAttendee}
-                  tabIndex={canAddAttendee ? 0 : -1}
                 >
                   + Add attendee
                 </button>
@@ -454,7 +456,12 @@ export default function NewMeetingDialog() {
                 Next
               </button>
             ) : (
-              <button type="submit" className="submit-button" disabled={isSubmitting}>
+              <button
+                type="button"
+                className="submit-button"
+                disabled={isSubmitting}
+                onClick={submitMeeting}
+              >
                 {isSubmitting ? 'Saving...' : 'Create'}
               </button>
             )}

@@ -301,13 +301,14 @@
   align-items: center;
 }
 
-.add-attendee-button--hidden {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .add-attendee-button:hover {
   background: #15803d;
+}
+
+.add-attendee-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #94a3b8;
 }
 
 .form-error {
