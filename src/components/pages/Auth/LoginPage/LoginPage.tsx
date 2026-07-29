@@ -9,6 +9,7 @@ export default function LoginPage() {
   const setSession = useAuthStore((state) => state.setSession);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,14 +50,25 @@ export default function LoginPage() {
 
         <div className="auth-form__row">
           <label htmlFor="loginPassword">Password</label>
-          <input
-            id="loginPassword"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="Enter your password"
-            required
-          />
+          <div className="auth-form__password-field">
+            <input
+              id="loginPassword"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              required
+            />
+            <button
+              type="button"
+              className="auth-form__password-toggle"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </div>
 
         {errorMessage ? <p className="auth-form__error">{errorMessage}</p> : null}

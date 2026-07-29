@@ -7,6 +7,8 @@ export default function SignUpPage() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,26 +82,48 @@ export default function SignUpPage() {
 
         <div className="auth-form__row">
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Create a password"
-            required
-          />
+          <div className="auth-form__password-field">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Create a password"
+              required
+            />
+            <button
+              type="button"
+              className="auth-form__password-toggle"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </div>
 
         <div className="auth-form__row">
           <label htmlFor="confirmPassword">Confirm password</label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Repeat your password"
-            required
-          />
+          <div className="auth-form__password-field">
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Repeat your password"
+              required
+            />
+            <button
+              type="button"
+              className="auth-form__password-toggle"
+              onClick={() => setShowConfirmPassword((current) => !current)}
+              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              aria-pressed={showConfirmPassword}
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </div>
 
         {errorMessage ? <p className="auth-form__error">{errorMessage}</p> : null}

@@ -66,6 +66,38 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
+.auth-form__password-field {
+  position: relative;
+}
+
+.auth-form__password-field input {
+  padding-right: 74px;
+}
+
+.auth-form__password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.auth-form__password-toggle:hover {
+  background: #eff6ff;
+}
+
+.auth-form__password-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
 .auth-form__split {
   display: grid;
   grid-template-columns: 1fr 1fr;
